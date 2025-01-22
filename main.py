@@ -1,12 +1,19 @@
 import kagglehub
+import tldextract
+
 import stores.amazon as am
+from globals import driver
 
 if __name__ == '__main__':
     url = input('Introduce la URL del producto: ')
 
     if 'amazon' in url:
-        print("Amazon detectado\n")
-        am.amazon_exec(url)
+        print("Amazon detectado")
+        if tldextract.extract(url).suffix == 'co.jp':
+            print("Amazon Japan no está disponible de momento. Sentimos las molestias")
+        else:
+            am.amazon_exec(url)
+            driver.quit() # Close the browser
 
         # Download latest version
         # path = kagglehub.dataset_download("naveedhn/amazon-product-review-spam-and-non-spam")

@@ -1,21 +1,36 @@
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
 import os
-import requests
-import logging
+import globals
 
-from bs4 import BeautifulSoup
 
-def obtain_soup(url):
-    api_key = os.getenv('SCRAPERAPI_KEY')
-    if not api_key:
-        print("No se ha encontrado la clave de ScraperAPI. Por favor, añádela a las variables de entorno.\n")
-        return None
+def login(country):
+    # Create a new instance of Chrome
+    driver = globals.driver
 
-    try:
-        payload = {'api_key' : api_key, 'url' : url}
-        response = requests.get('http://api.scraperapi.com', params=payload)
-        soup = BeautifulSoup(response.text, 'lxml')
-        return soup
+    driver.get(f"https://www.amazon.{country}/gp/sign-in.html")
 
-    except Exception as e:
-        logging.error(f"Error al obtener la página con ScraperAPI: {e}\n")
-        return None
+    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.NAME, "email"))).send_keys(os.getenv('AMAZONTEST_EMAIL'))
+    driver.find_element(By.ID, "continue").click()
+
+    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.NAME, "password"))).send_keys(os.getenv('AMAZONTEST_PASSWORD'))
+    driver.find_element(By.ID, "signInSubmit").click()
+
+def get_product_info(product_id):
+    driver = globals.driver
+    driver.get(f"https://www.amazon.com/dp/{product_id}")
+
+    #Obtain product name, price, and rating
+    product_name = driver.find_element(By.ID, "productTitle").text
+    product_price = driver.find_element(By.ID, "priceblock_ourprice").text
+    product_rating = driver.find_element(By.ID, "acrPopover").get_attribute("title")
+
+    product_info = {
+        "product_name": product_name,
+        "product_price": product_price,
+        "product_rating": product_rating
+    }
+
+    return product_info
