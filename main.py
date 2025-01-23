@@ -1,3 +1,5 @@
+import logging
+
 import kagglehub
 import tldextract
 
@@ -5,7 +7,9 @@ import stores.amazon as am
 from globals import driver
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     url = input('Introduce la URL del producto: ')
+    url = url.split("/dp/")[0] + "/dp/" + url.split("/dp/")[1].split("/")[0] # Remove any extra characters from the URL
 
     if 'amazon' in url:
         print("Amazon detectado")

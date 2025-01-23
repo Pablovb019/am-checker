@@ -10,10 +10,17 @@ from faker import Faker
 
 def amazon_exec(url):
     amazon_country = tldextract.extract(url).suffix
-    scr.login(amazon_country)
-    print("Login correcto")
-    # product_info = scr.get_product_info(product_id)
+    country_name = pycountry.countries.get(alpha_2=amazon_country).name
 
-    # print("Nombre del producto:", product_info["product_name"])
-    # print("Precio del producto:", product_info["product_price"])
-    # print("Valoracion del producto:", product_info["product_rating"])
+    logging.info(f"Doing Login in Amazon {country_name}")
+
+    scr.login(amazon_country)
+    logging.info("Login done")
+    logging.info("Getting product info")
+
+    product_info = scr.get_product_info(url)
+    logging.info("Product info obtained")
+
+    logging.info("Getting reviews")
+    reviews = scr.get_reviews()
+    logging.info("Reviews obtained")
