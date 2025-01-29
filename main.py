@@ -13,8 +13,8 @@ if __name__ == '__main__':
 
     if 'amazon' in url:
         print("Amazon detectado")
-        if tldextract.extract(url).suffix == 'co.jp':
-            print("Amazon Japan no está disponible de momento. Sentimos las molestias")
+        if tldextract.extract(url).suffix != 'com' or tldextract.extract(url).suffix != 'co.uk':
+            print("Only amazon.com and amazon.co.uk are supported")
         else:
             am.amazon_exec(url)
             driver.quit() # Close the browser
