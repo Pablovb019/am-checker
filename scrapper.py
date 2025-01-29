@@ -65,7 +65,15 @@ def get_reviews():
             })
         # next page
         try:
-            driver.get(f"{driver.current_url}&pageNumber={len(reviews)//10+1}")
+            next_url = driver.current_url
+            if next_url.find("pageNumber=") != -1: # If pageNumber is already present in the URL
+                next_url = next_url.split("pageNumber=")[0] + f"pageNumber={int(next_url.split('pageNumber=')[1]) + 1}"
+            else:
+                next_url += "&pageNumber=2"
+
+            driver.get(next_url)
             WebDriverWait(driver, 10).until(lambda d: d.execute_script('return document.readyState') == 'complete')
         except:
             break
+
+    return reviews

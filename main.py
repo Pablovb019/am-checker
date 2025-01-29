@@ -18,7 +18,7 @@ if __name__ == '__main__':
             print("Sorry, only amazon.com and amazon.co.uk are supported. Try again.")
         else:
             am.amazon_exec(url, country_suffix)
-            driver.quit() # Close the browser
+            driver.quit() # Close the browser after scraping
 
         # Download latest version
         # path = kagglehub.dataset_download("naveedhn/amazon-product-review-spam-and-non-spam")
