@@ -39,7 +39,6 @@ def get_product_info(url):
 def get_reviews():
     driver = globals.driver
     driver.get(driver.find_element(By.CSS_SELECTOR, '[data-hook="see-all-reviews-link-foot"]').get_attribute("href"))
-    WebDriverWait(driver, 10).until(lambda d: d.execute_script('return document.readyState') == 'complete')
 
     total_reviews = 100 # Amazon Limit for reviews, only 100 reviews are shown
     logging.info(f"Total reviews: {total_reviews}")
@@ -66,7 +65,7 @@ def get_reviews():
             })
         # next page
         try:
-            driver.find_element(By.CSS_SELECTOR, '.a-last').click()
+            driver.get(f"{driver.current_url}&pageNumber={len(reviews)//10+1}")
             WebDriverWait(driver, 10).until(lambda d: d.execute_script('return document.readyState') == 'complete')
         except:
             break
