@@ -8,13 +8,13 @@ from globals import driver
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-    url = input('Introduce la URL del producto: ')
+    url = input('URL of the product: ')
     url = url.split("/dp/")[0] + "/dp/" + url.split("/dp/")[1].split("/")[0] # Remove any extra characters from the URL
 
     if 'amazon' in url:
-        print("Amazon detectado")
-        if tldextract.extract(url).suffix != 'com' or tldextract.extract(url).suffix != 'co.uk':
-            print("Only amazon.com and amazon.co.uk are supported")
+        print("Amazon URL detected")
+        if tldextract.extract(url).suffix != 'com' and tldextract.extract(url).suffix != 'co.uk':
+            print("Sorry, only amazon.com and amazon.co.uk are supported. Try again.")
         else:
             am.amazon_exec(url)
             driver.quit() # Close the browser
@@ -23,4 +23,4 @@ if __name__ == '__main__':
         # path = kagglehub.dataset_download("naveedhn/amazon-product-review-spam-and-non-spam")
         # print("Path to dataset files:", path)
     else:
-        print("No se ha detectado la tienda. Inténtalo de nuevo.")
+        print("Amazon URL not detected. Try again.")
