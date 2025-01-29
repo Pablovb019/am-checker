@@ -18,5 +18,5 @@ def amazon_exec(url, country_suffix):
     logging.info("Product info obtained")
 
     logging.info("Getting reviews")
-    reviews = scr.get_reviews()
-    logging.info("Reviews obtained")
+    reviews = scr.get_reviews(country_name)
+    logging.info(f"Reviews obtained. Total reviews: {len(reviews)}")
