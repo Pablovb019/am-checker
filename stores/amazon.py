@@ -3,10 +3,6 @@ import scrapper as scr
 import tldextract
 import pycountry
 import logging
-import requests
-
-from bs4 import BeautifulSoup
-from faker import Faker
 
 def amazon_exec(url):
     amazon_country = tldextract.extract(url).suffix
