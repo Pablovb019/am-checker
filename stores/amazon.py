@@ -4,13 +4,13 @@ import tldextract
 import pycountry
 import logging
 
-def amazon_exec(url):
-    amazon_country = tldextract.extract(url).suffix
-    country_name = pycountry.countries.get(alpha_2=amazon_country).name
+def amazon_exec(url, country_suffix):
+    country = 'GB' if country_suffix == 'co.uk' else 'US'
+    country_name = pycountry.countries.get(alpha_2=country).name
 
     logging.info(f"Doing Login in Amazon {country_name}")
 
-    scr.login(amazon_country)
+    scr.login(country_suffix)
     logging.info("Login done")
     logging.info("Getting product info")
 

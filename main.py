@@ -13,10 +13,11 @@ if __name__ == '__main__':
 
     if 'amazon' in url:
         print("Amazon URL detected")
-        if tldextract.extract(url).suffix != 'com' and tldextract.extract(url).suffix != 'co.uk':
+        country_suffix = tldextract.extract(url).suffix
+        if country_suffix != 'com' and country_suffix != 'co.uk':
             print("Sorry, only amazon.com and amazon.co.uk are supported. Try again.")
         else:
-            am.amazon_exec(url)
+            am.amazon_exec(url, country_suffix)
             driver.quit() # Close the browser
 
         # Download latest version
