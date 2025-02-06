@@ -1,27 +1,15 @@
+import utilities.globals as gl
+
 import logging
 import re
+import pandas as pd
 
+from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 
-import os
-import globals
-
-
-def login(country):
-    driver = globals.driver
-    driver.get(f"https://www.amazon.{country}/gp/sign-in.html")
-
-    WebDriverWait(driver, 10).until(ec.element_to_be_clickable((By.NAME, "email"))).send_keys(os.getenv('AMAZONTEST_EMAIL'))
-    driver.find_element(By.ID, "continue").click()
-
-    WebDriverWait(driver, 10).until(ec.element_to_be_clickable((By.NAME, "password"))).send_keys(os.getenv('AMAZONTEST_PASSWORD'))
-    driver.find_element(By.ID, "signInSubmit").click()
-    WebDriverWait(driver, 10).until(lambda d: d.execute_script('return document.readyState') == 'complete')
-
 def get_product_info(url):
-    driver = globals.driver
+    driver = gl.driver
     driver.get(url)
 
     name = driver.find_element(By.ID, "productTitle").text
@@ -37,9 +25,12 @@ def get_product_info(url):
     return product_info
 
 def get_reviews(country_name):
-    driver = globals.driver
-    driver.get(driver.find_element(By.CSS_SELECTOR, '[data-hook="see-all-reviews-link-foot"]').get_attribute("href") + "&sortBy=helpful&reviewerType=all_reviews&filterByStar=all_star&pageNumber=1")
+    driver = gl.driver
+    driver.get(driver.find_element(By.CSS_SELECTOR, '[data-hook="see-all-reviews-link-foot"]').get_attribute("href") + "&language=en_US&sortBy=helpful&reviewerType=all_reviews&filterByStar=all_star&pageNumber=1")
+
+
     reviews = []
+    logging.info("Starting to scrape reviews\n\n")
 
     # Obtain all reviews (Sort By: Top reviews + Filter By: All reviews)
     reviews += get_reviews_recursive(country_name, driver, "Top Reviews", "All Reviews")
@@ -115,20 +106,20 @@ def get_reviews_recursive(country_name, driver, sort, type_filter):
     return reviews
 
 def get_reviews_stars_recursive(country_name, driver, stars, sort, type_filter):
-    product_review = driver.find_element(By.CSS_SELECTOR, '[data-hook="cr-filter-info-review-rating-count"]').text
+    product_review = WebDriverWait(driver, 10).until(ec.presence_of_element_located((By.CSS_SELECTOR, '[data-hook="cr-filter-info-review-rating-count"]'))).text
     total_reviews = int(re.findall(r'\d+', product_review)[1].replace(",", ""))
+    foreign = False
 
     total_reviews = min(100, total_reviews) # Limit to 100 reviews, Amazon only shows 10 reviews per page and we can only scrape 10 pages
-    logging.info(f"\n\nTotal reviews (including possible foreign review): {total_reviews}\n\n")
-
+    logging.info(f"Total reviews (including possible foreign review): {total_reviews}")
     reviews = []
     while len(reviews) < total_reviews:
-        reviews_page = driver.find_elements(By.CSS_SELECTOR, '[data-hook="review"]')
+        reviews_page = WebDriverWait(driver, 10).until(ec.presence_of_all_elements_located((By.CSS_SELECTOR, '[data-hook="review"]')))
         for review in reviews_page:
             if review.find_element(By.CSS_SELECTOR, '[data-hook="review-date"]').text.find(country_name) == -1:
-                logging.info("Skipping Foreign Review")
-                total_reviews -= 1
-                continue
+                logging.info("Skipping Foreign Reviews")
+                foreign = True
+                break
             logging.info(f"Review Progress ({sort}|{type_filter}|{stars}) {len(reviews)}/{total_reviews} [{len(reviews)/total_reviews*100:.1f}%]")
             review_author = review.find_element(By.CSS_SELECTOR, '.a-profile-name').text
             review_rating = driver.execute_script("return arguments[0].textContent;",review.find_element(By.CSS_SELECTOR,'[data-hook="review-star-rating"] .a-icon-alt')).split(" ")[0] + "/5"
@@ -143,14 +134,22 @@ def get_reviews_stars_recursive(country_name, driver, stars, sort, type_filter):
                 "title": review_title,
                 "text": review_text,
             })
+
+        if foreign:
+            break # If a foreign review is found, stop scraping, continue with the next filter
         # next page
         try:
             next_url = driver.current_url
             page_number = int(next_url.split("pageNumber=")[1].split("&")[0])
             next_url = next_url.replace(f"pageNumber={page_number}", f"pageNumber={page_number + 1}")
             driver.get(next_url)
-            WebDriverWait(driver, 10).until(lambda d: d.execute_script('return document.readyState') == 'complete')
         except Exception as e:
             print("Error: ", e)
 
+    logging.info(f"Review Progress ({sort}|{type_filter}|{stars}) All reviews obtained\n\n")
     return reviews
+
+def remove_repeated_reviews(reviews):
+    df = pd.DataFrame(reviews)
+    df.drop_duplicates(subset=["text"])
+    return df.to_dict(orient='records')
