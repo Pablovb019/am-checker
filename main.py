@@ -1,5 +1,4 @@
 import stores.amazon as am
-import utilities.globals as gl
 
 import logging
 import tldextract
@@ -16,7 +15,6 @@ if __name__ == '__main__':
             print("Sorry, only amazon.com and amazon.co.uk are supported. Try again.")
         else:
             am.amazon_exec(url, country_suffix)
-            gl.driver.quit() # Close the browser after scraping
 
         # Download latest version
         # path = kagglehub.dataset_download("naveedhn/amazon-product-review-spam-and-non-spam")
