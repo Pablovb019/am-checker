@@ -25,3 +25,4 @@ def make_login(country, suffix):
     logging.info("Login done. Saving cookies")
 
     ck.save_cookies(driver, f"cookies/amazon_{suffix}.pkl")
+    driver.quit()
