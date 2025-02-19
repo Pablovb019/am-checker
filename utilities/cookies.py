@@ -1,6 +1,7 @@
 import pickle
 import os
-import logging
+
+from utilities.logger import Logger
 
 def save_cookies(driver, path):
     with open(path, 'wb') as filehandler:
@@ -14,8 +15,8 @@ def load_cookies(driver, path):
 
 def check_cookies(country_suffix):
     if os.path.exists(f"cookies/amazon_{country_suffix}.pkl"):
-        logging.info("Cookies found. Not need to login. Loading cookies")
+        Logger.success("Cookies found. Not need to login. Loading cookies")
         return True
     else:
-        logging.info("Cookies not found. Redirecting to login process")
+        Logger.warning("Cookies not found. Redirecting to login process")
         return False
