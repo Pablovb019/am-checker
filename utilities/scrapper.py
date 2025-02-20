@@ -1,23 +1,52 @@
-import inspect
-
-import utilities.globals as gl
-import utilities.cookies as ck
-import utilities.login as l
-
 import re
-import pandas as pd
-import concurrent.futures
 import queue
+import threading
+import concurrent.futures
 import itertools
 import psutil
+import inspect
+import os
+import pandas as pd
 
 from selenium import webdriver
-from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.common import NoSuchElementException
 
 from utilities.logger import Logger
+import utilities.cookies as ck
+import utilities.login as l
+import utilities.globals as gl
+
+class WebDriverPool:
+    def __init__(self, max_size):
+        self.pool = queue.Queue(maxsize=max_size)
+        self.max_size = max_size
+        self.lock = threading.Lock()
+        self.futures = []
+
+    def get_driver(self):
+        with self.lock:
+            gl.number_tasks -= 1
+            if self.pool.empty() and self.pool.qsize() < self.max_size:
+                driver = webdriver.Firefox(options=gl.options)
+                return driver
+            else:
+                return self.pool.get()
+
+    def return_driver(self, driver):
+        with self.lock:
+            if gl.number_tasks > 0:
+                self.pool.put(driver)
+            else:
+                driver.quit()
+
+    def close_all(self):
+        with self.lock:
+            while not self.pool.empty():
+                driver = self.pool.get()
+                driver.quit()
 
 def get_full_class_name(obj):
     module = obj.__class__.__module__
@@ -39,7 +68,6 @@ def get_product_info(url, country_name, country_suffix):
         Logger.warning("No rating found. Setting rating to 0 as default")
         rating = 0
 
-
     normalized_price = re.sub(r'[^\d.,]', '', price)
     if ',' in normalized_price and '.' in normalized_price:
         normalized_price = normalized_price.replace(',', '')
@@ -50,7 +78,8 @@ def get_product_info(url, country_name, country_suffix):
     product_info = {
         "name": name,
         "price": normalized_price,
-        "rating": rating
+        "rating": rating,
+        "country": country_name
     }
 
     return product_info
@@ -62,6 +91,7 @@ def get_reviews(country_name, country_suffix, rating):
 
     reviews = queue.Queue()  # Use a thread-safe queue for storing reviews
     driver = gl.driver
+    driver_pool = WebDriverPool(max_size=psutil.cpu_count(logical=False))
 
     try:
         base_url = driver.find_element(By.CSS_SELECTOR, '[data-hook="see-all-reviews-link-foot"]').get_attribute("href") + "&language=en_US&sortBy=helpful&reviewerType=all_reviews&filterByStar=all_star&pageNumber=1"
@@ -73,9 +103,7 @@ def get_reviews(country_name, country_suffix, rating):
         combinations = list(itertools.product(stars_options, sort_options, type_filter_options))
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=psutil.cpu_count(logical=False)) as executor:
-            futures = []
-            for stars, sort, type_filter in combinations:
-                futures.append(executor.submit(get_reviews_star_combo, country_name, country_suffix, base_url, stars, sort, type_filter))
+            futures = [executor.submit(get_reviews_star_combo, country_name, country_suffix, base_url, stars, sort,type_filter, driver_pool) for stars, sort, type_filter in combinations]
 
             for future in concurrent.futures.as_completed(futures):
                 try:
@@ -83,47 +111,56 @@ def get_reviews(country_name, country_suffix, rating):
                     for review in result:
                         reviews.put(review)
                 except Exception as e:
+                    error_message = e.args[0]
                     function_name = inspect.currentframe().f_code.co_name
                     exception_class = get_full_class_name(e)
-                    raise (e, function_name, exception_class)
+                    file_name = os.path.basename(__file__)
+
+                    e.args = (error_message, function_name, file_name, exception_class)
+                    raise e
     except Exception as e:
-        if len(e.args) == 3:
+        if len(e.args) == 4:
             raise e
         else:
+            error_message = e.args[0]
             function_name = inspect.currentframe().f_code.co_name
             exception_class = get_full_class_name(e)
+            file_name = os.path.basename(__file__)
 
-            e.args = (e, function_name, exception_class)
+            e.args = (error_message, function_name, file_name, exception_class)
             raise e
 
     finally:
-        driver.quit()
+        driver_pool.close_all()
 
     return list(reviews.queue)
 
-def get_reviews_star_combo(country_name, country_suffix, base_url, stars, sort, type_filter):
+def get_reviews_star_combo(country_name, country_suffix, base_url, stars, sort, type_filter, driver_pool):
     reviews = []
     review_driver = None
 
     try:
-        review_driver = webdriver.Firefox(options=gl.options)
+        review_driver = driver_pool.get_driver()
         review_driver.get(f"https://www.amazon.{country_suffix}")
         ck.load_cookies(review_driver, f"cookies/amazon_{country_suffix}.pkl")
         Logger.info(f"Scraping {stars}-star reviews ({sort}|{type_filter})")
         reviews = get_reviews_stars_recursive(country_name, base_url, review_driver, stars, sort, type_filter)
     except Exception as e:
-        if len(e.args) == 3:
+        if len(e.args) == 4:
             raise e
         else:
+            error_message = e.args[0]
             function_name = inspect.currentframe().f_code.co_name
             exception_class = get_full_class_name(e)
+            file_name = os.path.basename(__file__)
 
-            e.args = (e, function_name, exception_class)
+            e.args = (error_message, function_name, file_name, exception_class)
             raise e
     finally:
-        Logger.success(f"Scraping {stars}-star reviews ({sort}|{type_filter}) -- DONE ({len(reviews)} reviews)")
         if review_driver:
-            review_driver.quit()
+            driver_pool.return_driver(review_driver)
+        Logger.success(f"Scraping {stars}-star reviews ({sort}|{type_filter}) -- DONE ({len(reviews)} reviews)")
+
     return reviews
 
 def get_reviews_stars_recursive(country_name, base_url, driver, stars, sort, type_filter):
@@ -185,13 +222,15 @@ def get_reviews_stars_recursive(country_name, base_url, driver, stars, sort, typ
             next_url = next_url.replace(f"pageNumber={page_number}", f"pageNumber={page_number + 1}")
             driver.get(next_url)
         except Exception as e:
-            if len(e.args) == 3:
+            if len(e.args) == 4:
                 raise e
             else:
+                error_message = e.args[0]
                 function_name = inspect.currentframe().f_code.co_name
                 exception_class = get_full_class_name(e)
+                file_name = os.path.basename(__file__)
 
-                e.args = (e, function_name, exception_class)
+                e.args = (error_message, function_name, file_name, exception_class)
                 raise e
 
     return reviews

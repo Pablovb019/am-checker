@@ -8,13 +8,14 @@ class CustomLogger(logging.Logger):
     def defineLogger(self):
         coloredlogs.install(
             logger=self,
-            level='INFO',
+            level='DEBUG',
             fmt='%(asctime)s - %(levelname)s - %(message)s',
             level_styles={
                 'info': {'color': 'blue'},
                 'error': {'color': 'red'},
                 'warning': {'color': 'yellow'},
-                'success': {'color': 'green'}
+                'success': {'color': 'green'},
+                'debug': {'color': 'magenta'}
             },
             field_styles={
                 'levelname': {'bold': True, 'color': 'cyan'},
@@ -29,5 +30,5 @@ class CustomLogger(logging.Logger):
 
 
 Logger = CustomLogger('TFG')
-Logger.setLevel(logging.INFO)
+Logger.setLevel(logging.DEBUG)
 Logger.defineLogger()

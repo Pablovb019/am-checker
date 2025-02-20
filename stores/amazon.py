@@ -4,6 +4,7 @@ from utilities import database as db
 import pycountry
 import datetime
 import inspect
+import os
 
 from utilities.logger import Logger
 
@@ -30,13 +31,15 @@ def amazon_exec(url, country_suffix):
     try:
         check_product = db.check_product(product_id)
     except Exception as e:
-        if len(e.args) == 3:
+        if len(e.args) == 4:
             raise e
         else:
+            error_message = e.args[0]
             function_name = inspect.currentframe().f_code.co_name
             exception_class = get_full_class_name(e)
+            file_name = os.path.basename(__file__)
 
-            e.args = (e, function_name, exception_class)
+            e.args = (error_message, function_name, file_name, exception_class)
             raise e
 
     if check_product:
@@ -49,13 +52,15 @@ def amazon_exec(url, country_suffix):
             try:
                 db.update_last_product_scan(product_id)
             except Exception as e:
-                if len(e.args) == 3:
+                if len(e.args) == 4:
                     raise e
                 else:
+                    error_message = e.args[0]
                     function_name = inspect.currentframe().f_code.co_name
                     exception_class = get_full_class_name(e)
+                    file_name = os.path.basename(__file__)
 
-                    e.args = (e, function_name, exception_class)
+                    e.args = (error_message, function_name, file_name, exception_class)
                     raise e
 
             Logger.info("Getting reviews")
@@ -68,13 +73,15 @@ def amazon_exec(url, country_suffix):
                 reviews = db.load_reviews(product_id)
                 Logger.success(f"Loaded reviews of product_id '{product_id}' from database. Total reviews: {len(reviews)}")
             except Exception as e:
-                if len(e.args) == 3:
+                if len(e.args) == 4:
                     raise e
                 else:
+                    error_message = e.args[0]
                     function_name = inspect.currentframe().f_code.co_name
                     exception_class = get_full_class_name(e)
+                    file_name = os.path.basename(__file__)
 
-                    e.args = (e, function_name, exception_class)
+                    e.args = (error_message, function_name, file_name, exception_class)
                     raise e
     else:
         Logger.warning("Product is not in database. Saving product info")
@@ -82,19 +89,21 @@ def amazon_exec(url, country_suffix):
             db.save_product(product_id, product_info)
             Logger.success("Product info saved in database")
         except Exception as e:
-            if len(e.args) == 3:
+            if len(e.args) == 4:
                 raise e
             else:
+                error_message = e.args[0]
                 function_name = inspect.currentframe().f_code.co_name
                 exception_class = get_full_class_name(e)
+                file_name = os.path.basename(__file__)
 
-                e.args = (e, function_name, exception_class)
+                e.args = (error_message, function_name, file_name, exception_class)
                 raise e
 
     if not check_product or flag_lastScan:
         Logger.info("Getting reviews")
         reviews = scr.get_reviews(country_name, country_suffix, product_info["rating"])
-        print("\n\n") # for output purposes
+        print("\n") # for output purposes
         Logger.success(f"Reviews obtained. Total reviews: {len(reviews)}")
 
         if not reviews:
@@ -105,13 +114,15 @@ def amazon_exec(url, country_suffix):
                 db.delete_product(product_id)
                 Logger.success("Product deleted from database")
             except Exception as e:
-                if len(e.args) == 3:
+                if len(e.args) == 4:
                     raise e
                 else:
+                    error_message = e.args[0]
                     function_name = inspect.currentframe().f_code.co_name
                     exception_class = get_full_class_name(e)
+                    file_name = os.path.basename(__file__)
 
-                    e.args = (e, function_name, exception_class)
+                    e.args = (error_message, function_name, file_name, exception_class)
                     raise e
 
         if not flag_noReviews:
@@ -133,11 +144,13 @@ def amazon_exec(url, country_suffix):
                     db.save_reviews(product_id, reviews)
                     Logger.success("Reviews saved in database")
                 except Exception as e:
-                    if len(e.args) == 3:
+                    if len(e.args) == 4:
                         raise e
                     else:
+                        error_message = e.args[0]
                         function_name = inspect.currentframe().f_code.co_name
                         exception_class = get_full_class_name(e)
+                        file_name = os.path.basename(__file__)
 
-                        e.args = (e, function_name, exception_class)
+                        e.args = (error_message, function_name, file_name, exception_class)
                         raise e

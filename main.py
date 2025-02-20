@@ -1,4 +1,5 @@
 import stores.amazon as am
+import utilities.globals as gl
 
 import tldextract
 import requests
@@ -25,10 +26,15 @@ if __name__ == '__main__':
                 else:
                     try:
                         am.amazon_exec(url, country_suffix)
+                        gl.driver.quit()
+
                     except Exception as e:
+                        raised_error_message = e.args[0]
                         raised_function_name = e.args[1]
-                        raised_exception_class = e.args[2]
-                        Logger.error(f"Error obtaining amazon reviews\nFunction: {raised_function_name}\nException: {raised_exception_class}")
+                        raised_file = e.args[2]
+                        raised_exception_class = e.args[3]
+
+                        Logger.error(f"An error was captured obtaining Amazon reviews. Details below.\n- File: {raised_file}\n- Function: {raised_function_name} \n- Exception: {raised_exception_class}: {raised_error_message}")
 
         # Download latest version
         # path = kagglehub.dataset_download("naveedhn/amazon-product-review-spam-and-non-spam")

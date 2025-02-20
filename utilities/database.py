@@ -35,10 +35,12 @@ def check_product(product_id):
         return result
     except Exception as e:
         conn.close()
+        error_message = e.args[0]
         function_name = inspect.currentframe().f_code.co_name
         exception_class = get_full_class_name(e)
+        file_name = os.path.basename(__file__)
 
-        e.args = (e, function_name, exception_class)
+        e.args = (error_message, function_name, file_name, exception_class)
         raise e
 
 def check_reviews(product_id):
@@ -52,10 +54,12 @@ def check_reviews(product_id):
         return result
     except Exception as e:
         conn.close()
+        error_message = e.args[0]
         function_name = inspect.currentframe().f_code.co_name
         exception_class = get_full_class_name(e)
+        file_name = os.path.basename(__file__)
 
-        e.args = (e, function_name, exception_class)
+        e.args = (error_message, function_name, file_name, exception_class)
         raise e
 
 def get_last_product_scan(product_id):
@@ -69,10 +73,12 @@ def get_last_product_scan(product_id):
         return result
     except Exception as e:
         conn.close()
+        error_message = e.args[0]
         function_name = inspect.currentframe().f_code.co_name
         exception_class = get_full_class_name(e)
+        file_name = os.path.basename(__file__)
 
-        e.args = (e, function_name, exception_class)
+        e.args = (error_message, function_name, file_name, exception_class)
         raise e
 
 def update_last_product_scan(product_id):
@@ -85,10 +91,12 @@ def update_last_product_scan(product_id):
         conn.close()
     except Exception as e:
         conn.close()
+        error_message = e.args[0]
         function_name = inspect.currentframe().f_code.co_name
         exception_class = get_full_class_name(e)
+        file_name = os.path.basename(__file__)
 
-        e.args = (e, function_name, exception_class)
+        e.args = (error_message, function_name, file_name, exception_class)
         raise e
 
 def save_product(product_id, product_info):
@@ -96,15 +104,17 @@ def save_product(product_id, product_info):
     try:
         conn = db_conn()
         with conn.cursor() as cursor:
-            cursor.execute("INSERT INTO products VALUES (%s, %s, %s, %s, %s)",(product_id, product_info["name"], product_info["price"], product_info["rating"], datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+            cursor.execute("INSERT INTO products VALUES (%s, %s, %s, %s, %s, %s)",(product_id, product_info["name"], product_info["price"], product_info["rating"], product_info["country"], datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
         conn.commit()
         conn.close()
     except Exception as e:
         conn.close()
+        error_message = e.args[0]
         function_name = inspect.currentframe().f_code.co_name
         exception_class = get_full_class_name(e)
+        file_name = os.path.basename(__file__)
 
-        e.args = (e, function_name, exception_class)
+        e.args = (error_message, function_name, file_name, exception_class)
         raise e
 
 def load_reviews(product_id):
@@ -118,10 +128,12 @@ def load_reviews(product_id):
         return result
     except Exception as e:
         conn.close()
+        error_message = e.args[0]
         function_name = inspect.currentframe().f_code.co_name
         exception_class = get_full_class_name(e)
+        file_name = os.path.basename(__file__)
 
-        e.args = (e, function_name, exception_class)
+        e.args = (error_message, function_name, file_name, exception_class)
         raise e
 
 def save_reviews(product_id, reviews):
@@ -135,10 +147,12 @@ def save_reviews(product_id, reviews):
         conn.close()
     except Exception as e:
         conn.close()
+        error_message = e.args[0]
         function_name = inspect.currentframe().f_code.co_name
         exception_class = get_full_class_name(e)
+        file_name = os.path.basename(__file__)
 
-        e.args = (e, function_name, exception_class)
+        e.args = (error_message, function_name, file_name, exception_class)
         raise e
 
 def check_review(review_id):
@@ -152,10 +166,12 @@ def check_review(review_id):
         return result
     except Exception as e:
         conn.close()
+        error_message = e.args[0]
         function_name = inspect.currentframe().f_code.co_name
         exception_class = get_full_class_name(e)
+        file_name = os.path.basename(__file__)
 
-        e.args = (e, function_name, exception_class)
+        e.args = (error_message, function_name, file_name, exception_class)
         raise e
 
 def delete_product(product_id):
@@ -168,8 +184,10 @@ def delete_product(product_id):
         conn.close()
     except Exception as e:
         conn.close()
+        error_message = e.args[0]
         function_name = inspect.currentframe().f_code.co_name
         exception_class = get_full_class_name(e)
+        file_name = os.path.basename(__file__)
 
-        e.args = (e, function_name, exception_class)
+        e.args = (error_message, function_name, file_name, exception_class)
         raise e
