@@ -35,9 +35,5 @@ if __name__ == '__main__':
                         raised_exception_class = e.args[3]
 
                         Logger.error(f"An error was captured obtaining Amazon reviews. Details below.\n- File: {raised_file}\n- Function: {raised_function_name} \n- Exception: {raised_exception_class}: {raised_error_message}")
-
-        # Download latest version
-        # path = kagglehub.dataset_download("naveedhn/amazon-product-review-spam-and-non-spam")
-        # print("Path to dataset files:", path)
     else:
         Logger.error("Amazon URL not detected. Try again.")
