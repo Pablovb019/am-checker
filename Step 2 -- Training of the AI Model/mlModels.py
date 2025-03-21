@@ -1,164 +1,95 @@
-import numpy as np
+import cudf
 from cuml import LogisticRegression, RandomForestClassifier
+from cuml.feature_extraction.text import TfidfVectorizer
 from cuml.preprocessing import train_test_split
 import matplotlib.pyplot as plt
 import seaborn as sns
 from cuml.metrics import accuracy_score, confusion_matrix, roc_auc_score
+from sklearn.metrics import f1_score
 import lightgbm as lgb
-import cupy as cp
-
-
-def calculate_f1(cm):
-    """Manual F1 calculation that works for both binary and multiclass"""
-    if len(cm.shape) == 2 and cm.shape[0] == 2:  # Binary case
-        tn, fp, fn, tp = cm.ravel()
-        precision = tp / (tp + fp) if (tp + fp) != 0 else 0
-        recall = tp / (tp + fn) if (tp + fn) != 0 else 0
-        return 2 * (precision * recall) / (precision + recall) if (precision + recall) != 0 else 0
-    else:  # Multiclass - calculate weighted F1
-        tp = np.diag(cm)
-        fp = cm.sum(axis=0) - tp
-        fn = cm.sum(axis=1) - tp
-
-        precision = tp / (tp + fp)
-        recall = tp / (tp + fn)
-
-        f1 = 2 * (precision * recall) / (precision + recall)
-        f1[np.isnan(f1)] = 0  # Handle division by zero
-
-        # Weighted average
-        support = cm.sum(axis=1)
-        return np.sum(f1 * support) / support.sum()
 
 
 def execute_mL(df):
-    df['class'] = df['class'].astype('int32')
+    # === DUPLICATE CHECK ===
+    df = df[~df.index.duplicated()]  # Remove duplicates if any
 
-    # === CONVERT STRING FEATURES TO GPU ARRAYS ===
-    features_array = cp.array([
-        [float(x) for x in vec.split() if x]
-        for vec in df['features'].fillna('').to_arrow().to_pylist()
-    ])
+    # === TF-IDF FEATURES ===
+    vectorizer = TfidfVectorizer(stop_words='english', ngram_range=(1, 2), max_features=5000)
+    tfidf_features = vectorizer.fit_transform(df['reviewText']).toarray()
 
-    # === TABULAR FEATURES ===
+    # === cuDF DATAFRAME ===
+    df = df.reset_index(drop=True)
+    tfidf_df = cudf.DataFrame(tfidf_features).reset_index(drop=True)
+    tfidf_df.columns = [f'tfidf_{i}' for i in range(tfidf_features.shape[1])]
+
+
+    # === MERGE TF-IDF FEATURES ===
     feature_cols = ['helpfulTotalRatio', 'reviewLength', 'isWeekend', 'productPopularity', 'avgProductRating', 'containsQuestion']
-    tabular_features = df[feature_cols].values
-
-    # === COMBINE ALL FEATURES ===
-    X = cp.hstack([features_array, tabular_features])
-    y = df['class'].values
+    tabular_features = df[feature_cols].reset_index(drop=True).rename(columns=lambda x: f'tab_{x}')
+    features = cudf.concat([tfidf_df, tabular_features], axis=1)
 
     # === DATA SPLITTING ===
     X_train, X_test, y_train, y_test = train_test_split(
-        X,
-        y,
-        test_size=0.3,
-        random_state=42,
-        stratify=y
+        features, df['class'], test_size=0.3, random_state=42, stratify=df['class']
     )
 
-    # === DYNAMIC CLASS HANDLING ===
-    num_classes = len(cp.unique(y_train))
-    print(f"Number of Classes: {num_classes}")
-
-    # === MODEL PARAMETERS ===
-    params_gdb = {
-        "device": "cuda",
-        "boosting_type": "gbdt",
-        "objective": "multiclass",
-        "num_class": num_classes,
-        "max_depth": 5,
-        "n_estimators": 100,
-        "learning_rate": 0.1,
-        "num_leaves": 31,
-        "min_child_samples": 20,
-        "reg_alpha": 0.1,
-        "reg_lambda": 0.1,
-        "force_col_wise": True,
-        "subsample": 0.8,
-        "colsample_bytree": 0.8,
-        "early_stopping_rounds": 20,
-        "metric": "multi_logloss",
-        "verbose": -1
-    }
-
-    params_dt = {
-        "device": "cuda",
-        "boosting_type": "gbdt",
-        "objective": "multiclass",
-        "num_class": num_classes,
-        "n_estimators": 1,
-        "max_depth": -1,
-        "num_leaves": 255,
-        "min_child_samples": 1,
-        "learning_rate": 1.0,
-        "feature_fraction": 1.0,
-        "bagging_freq": 0,
-        "reg_alpha": 0.0,
-        "reg_lambda": 0.0,
-        "force_col_wise": True,
-        "early_stopping_rounds": 20,
-        "verbose": -1
-    }
-
-    # === MODEL DEFINITION ===
+    # === MODEL INITIALIZATION ===
     models = {
-        "Decision Tree": lgb.LGBMClassifier(**params_dt),
-        "Random Forest": RandomForestClassifier(n_estimators=100, max_depth=20),
-        "Logistic Regression": LogisticRegression(max_iter=2000, penalty='l2', C=1.0),
-        "Gradient Boosting": lgb.LGBMClassifier(**params_gdb)
+        "Logistic Regression": LogisticRegression(max_iter=2000),
+        "Random Forest": RandomForestClassifier(n_estimators=100),
+        "Gradient Boosting": lgb.LGBMClassifier(
+            device='cuda', objective='multiclass', num_class=len(y_train.unique()),
+            n_estimators=500, learning_rate=0.05, max_depth=8,
+            num_leaves=127, verbose=-1
+        ),
+        "Decision Tree": lgb.LGBMClassifier(
+            device='cuda', objective='multiclass', num_class=len(y_train.unique()),
+            n_estimators=1, max_depth=12, learning_rate=0.8,
+            min_child_samples=20, verbose=-1
+        )
     }
 
-    # === TRAINING LOOP ===
     results = {}
-    for name, model in models.items():
-        X_train_np = X_train.get() if isinstance(X_train, cp.ndarray) else X_train
-        y_train_np = y_train.get() if isinstance(y_train, cp.ndarray) else y_train
-        X_test_np = X_test.get() if isinstance(X_test, cp.ndarray) else X_test
-        y_test_np = y_test.get() if isinstance(y_test, cp.ndarray) else y_test
 
-        if "Gradient Boosting" in name or "Decision Tree" in name:
-            # LightGBM requires validation set for early stopping
+    # === MODEL TRAINING ===
+    for name, model in models.items():
+        # Train model
+        if "Gradient" in name or "Decision" in name:
+            X_train_pd = X_train.to_pandas()
+            y_train_pd = y_train.to_pandas()
+            X_test_pd = X_test.to_pandas()
+            y_test_pd = y_test.to_pandas()
+
             model.fit(
-                X_train_np,
-                y_train_np,
-                eval_set=[(X_test_np, y_test_np)],
+                X_train_pd,
+                y_train_pd,
+                eval_set=[(X_test_pd, y_test_pd)],
                 eval_metric='multi_logloss'
             )
+
+            preds = model.predict(X_test.to_pandas())
+            preds = cudf.Series(preds)
         else:
-            # Other models (cuML)
-            model.fit(X_train_np, y_train_np)
+            model.fit(X_train, y_train)
+            preds = model.predict(X_test)
 
-        # === PREDICT PROBABILITIES FOR AUC ===
-        auc = 0.0
-        if hasattr(model, "predict_proba"):
-            predictions_proba = model.predict_proba(X_test_np)
-            auc = roc_auc_score(y_test, predictions_proba[:, 1])
+        # Calculate metrics
+        acc = accuracy_score(y_test, preds.astype('int64'))
+        f1 = f1_score(y_test.to_pandas(), preds.to_pandas(), average='weighted')
+        auc = roc_auc_score(y_test, preds)
 
-        predictions = cp.asarray(model.predict(X_test_np), dtype='int32')
 
-        # === METRICS ===
-        cm = confusion_matrix(y_test.astype('int32') if isinstance(y_test, cp.ndarray) else cp.array(y_test.astype('int32')),predictions.astype('int32'))
-        f1 = calculate_f1(cm.get() if hasattr(cm, "get") else cm)
+        results[name] = {'Accuracy': acc, 'F1': f1, 'AUC': auc}
 
-        results[name] = {
-            "Accuracy": accuracy_score(y_test, predictions),
-            "F1-Score": f1,
-            "AUC": auc,
-        }
+        print(f"{name} - Accuracy: {acc:.4f}, F1: {f1:.4f}, AUC: {auc:.4f}")
+        plot_confusion_matrix(y_test, preds, name)
 
-        print(f"\n=== {name} ===")
-        print(f"Test Accuracy: {results[name]['Accuracy']:.4f}")
-        print(f"F1-Score: {results[name]['F1-Score']:.4f}")
-        print(f"AUC: {results[name]['AUC']:.4f}")
-
-        plot_confusion_matrix(y_test, predictions, name)
-
+    # === PLOT MODEL COMPARISON ===
     plot_model_comparison(results)
 
 
 def plot_confusion_matrix(y_true, y_pred, title):
-    cm = confusion_matrix(y_true, y_pred)
+    cm = confusion_matrix(y_true.astype('int64'), y_pred.astype('int64'))
     if hasattr(cm, "get"):
         cm = cm.get()
 

@@ -1,5 +1,5 @@
 import cudf
-from cuml.feature_extraction.text import HashingVectorizer
+from cuml.feature_extraction._tfidf_vectorizer import TfidfVectorizer
 from cuml.preprocessing import KBinsDiscretizer
 import cupy as cp
 from nltk.corpus import stopwords
@@ -51,31 +51,5 @@ def execute(df):
     df['containsQuestion'] = df['reviewText'].str.contains(r"\?").astype('int8')
 
     # === SAMPLING ===
-    df.drop(columns=['summary', 'reviewTime', 'helpfulRatioCategory'], inplace=True)
     df = df.groupby('asin').sample(frac=0.001, random_state=42)
-
-    # === TF-IDF PROCESSING ===
-    stopwords_list = stopwords.words('english')
-    vectorizer = HashingVectorizer(
-        n_features=1000,
-        stop_words=stopwords_list,
-    )
-    tfidf_matrix = vectorizer.fit_transform(df['reviewText'])
-
-    umap = UMAP(
-        n_components=100,
-        n_neighbors=10,  # Reducir de 15 (default) a 10
-        min_dist=0.1,  # Aumentar separación entre puntos
-        random_state=42,
-        output_type='cupy'
-    )
-    tfidf_reduced = umap.fit_transform(tfidf_matrix)
-
-    # === STORE FEATURES ===
-    df['features'] = df['reviewText'].str.slice(0, 0)  # Columna dummy para evitar copias
-    df['features'] = cudf.Series([
-        ' '.join(row.astype('str'))
-        for row in cp.asnumpy(tfidf_reduced)
-    ])
-
     return df
