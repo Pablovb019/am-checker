@@ -1,5 +1,6 @@
 import cudf
 import mlModels as mL
+import training as tr
 import os
 import preprocessing as pre
 import time
@@ -9,7 +10,7 @@ from numba import cuda
 if __name__ == '__main__':
     start_time = time.time()
 
-    folder = "Datasets/Electronics"
+    folder = "Datasets/Sports and Outdoors"
     json_files = [f for f in os.listdir(folder) if f.endswith('.json')]
     df = None
 
@@ -27,6 +28,7 @@ if __name__ == '__main__':
 
     print(f"\nTiempo total de preprocesamiento: {time.time() - start_time:.2f} segundos")
     print("Número de filas:", len(df))
-    mL.execute_mL(df)
+    tr.train(df)
+    #mL.execute_mL(df)
 
     print(f"\nTiempo total: {time.time() - start_time:.2f} segundos")
