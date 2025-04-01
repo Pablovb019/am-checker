@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Título por defecto{% endblock %}</title>
+
+    <!-- Favicons -->
+    <link href="/static/img/favicon.png" rel="icon">
+
+    <!-- Flag Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/css/flag-icons.min.css">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+
+    <!-- Vendor CSS Files -->
+    <link href="/static/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="/static/vendor/aos/aos.css" rel="stylesheet">
+
+    <!-- Main CSS File -->
+    <link href="/static/css/main.css" rel="stylesheet">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light text-center">
+
+    <!-- Incluir header -->
+    {% include 'basic/header.html' %}
+
+    <main class="main">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Incluir footer -->
+    {% include 'basic/footer.html' %}
+
+    <!-- Scroll Top -->
+    <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+    <!-- Vendor JS Files -->
+    <script src="/static/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/vendor/aos/aos.js"></script>
+
+    <!-- DOMPurify for XSS Protection -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+
+    <!-- Main JS File -->
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

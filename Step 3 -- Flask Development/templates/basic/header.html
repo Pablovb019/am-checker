@@ -1,0 +1,43 @@
+<header id="header" class="header d-flex align-items-center fixed-top">
+    <div class="header-container container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
+        <a href="/" class="logo d-flex align-items-center me-auto me-xl-0">
+            <img src="/static/img/AmCheck.png" alt="AmCheck" class="img-fluid">
+        </a>
+
+        <nav id="navmenu" class="navmenu">
+            <ul>
+                <li><a href="#" class="active" data-translate="analyze">Solicitar Análisis</a></li>
+                <li><a href="#" data-translate="stats">Estadísticas</a></li>
+                <li><a href="#" data-translate="recent">Análisis Recientes</a></li>
+            </ul>
+            <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+        </nav>
+
+        <div class="d-flex align-items-center gap-3">
+            <div class="dropdown">
+                <button id="languageDropdown" class="btn dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span id="currentFlag" class="fi fi-es"></span>
+                    <span id="currentLang" class="d-none d-sm-inline">ES</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item language-option d-flex align-items-center gap-2" href="#" data-lang="es">
+                            <span class="fi fi-es"></span>
+                            <span>Español</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item language-option d-flex align-items-center gap-2" href="#" data-lang="en">
+                            <span class="fi fi-gb"></span>
+                            <span>English</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <a class="btn-changeTheme d-flex align-items-center">
+                <i class="bi"></i>
+            </a>
+        </div>
+    </div>
+</header>
