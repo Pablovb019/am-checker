@@ -6,6 +6,7 @@ import itertools
 import psutil
 import inspect
 import os
+import langdetect
 import pandas as pd
 
 from selenium import webdriver
@@ -250,5 +251,17 @@ def normalize_reviews(reviews, country_suffix):
         else:
             formated_date = pd.to_datetime(date, format="%B %d, %Y")    # Amazon US date format
         review["date"] = formated_date.strftime("%d-%m-%Y")
+
+    return reviews
+
+def check_language(reviews):
+    for review in reviews:
+        try:
+            lang = langdetect.detect(review["text"])
+            if lang != "en":
+                reviews.remove(review)
+        except langdetect.lang_detect_exception.LangDetectException:
+            Logger.warning(f"Error detecting language for review {review['id']}")
+            reviews.remove(review)
 
     return reviews

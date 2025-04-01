@@ -131,6 +131,9 @@ def amazon_exec(url, country_suffix):
             Logger.info("Checking for repeated reviews")
             reviews = scr.remove_repeated_reviews(reviews)
             Logger.success(f"Repeated reviews removed. Total reviews: {len(reviews)}")
+            Logger.info("Checking if all reviews are in English")
+            reviews = scr.check_language(reviews)
+            Logger.success(f"Foreign reviews removed. Total reviews: {len(reviews)}")
 
             if flag_lastScan:
                 Logger.info("Checking if new reviews where obtained")
