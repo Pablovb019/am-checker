@@ -43,7 +43,6 @@ def fetch_reviews():
 	try:
 		country_suffix = tldextract.extract(url).suffix
 		product_info, reviews = amazon.amazon_exec(url, country_suffix)
-		gl.driver.quit()
 		return jsonify({"product_info": product_info, "reviews": reviews}), 200
 	except Exception as e:
 		return jsonify({"error": str(e)}), 500
