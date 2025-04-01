@@ -186,3 +186,6 @@ fabric.properties
 
 # Not commit JSONs
 **/*.json
+
+#Not commit .pkl files
+**/*.pkl
