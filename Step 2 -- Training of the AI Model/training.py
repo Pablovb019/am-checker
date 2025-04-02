@@ -6,7 +6,7 @@ import gc
 from numba import cuda
 from cuml.feature_extraction.text import TfidfVectorizer
 from cuml.preprocessing import train_test_split
-from cuml.metrics import accuracy_score, roc_auc_score
+from cuml.metrics import accuracy_score, roc_auc_score, confusion_matrix
 from imblearn.under_sampling import RandomUnderSampler
 from sklearn.metrics import f1_score, matthews_corrcoef
 from xgboost import XGBClassifier
@@ -34,7 +34,7 @@ def train(df, model_path="ML_Models/model.pkl", vectorizer_path="ML_Models/vecto
     else:
         # Model does not exist, train from scratch
         print("Modelo y vectorizer no encontrados. Entrenando desde cero.")
-        vectorizer = TfidfVectorizer(stop_words='english', ngram_range=(1, 2), max_features=1000)
+        vectorizer = TfidfVectorizer(stop_words='english', ngram_range=(1, 2), max_features=900)
         model = XGBClassifier(
             device='cuda', tree_method='gpu_hist', predictor='gpu_predictor', objective='multi:softmax',
             enable_categorical=True, num_class=len(df['class'].unique()), n_estimators=500,
@@ -52,7 +52,7 @@ def train(df, model_path="ML_Models/model.pkl", vectorizer_path="ML_Models/vecto
     tfidf_df.columns = [f'tfidf_{i}' for i in range(tfidf_features.shape[1])]
 
     # === MERGE TF-IDF FEATURES ===
-    feature_cols = ['helpfulTotalRatio', 'reviewLength', 'isWeekend', 'productPopularity', 'avgProductRating', 'containsQuestion']
+    feature_cols = ['reviewLength', 'isWeekend', 'containsQuestion']
     tabular_features = df[feature_cols].reset_index(drop=True).rename(columns=lambda x: f'tab_{x}')
 
     features = cudf.concat([tfidf_df, tabular_features], axis=1)

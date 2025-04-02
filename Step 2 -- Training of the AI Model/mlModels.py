@@ -12,7 +12,6 @@ from xgboost import XGBClassifier
 from sklearn.tree import DecisionTreeClassifier
 import gc
 from numba import cuda
-import cupy as cp
 
 
 def execute_mL(df):
@@ -21,7 +20,7 @@ def execute_mL(df):
 
     # === TF-IDF FEATURES ===
     print("Extrayendo características TF-IDF...")
-    vectorizer = TfidfVectorizer(stop_words='english', ngram_range=(1, 2), max_features=1000)
+    vectorizer = TfidfVectorizer(stop_words='english', ngram_range=(1, 2), max_features=900)
     tfidf_features = vectorizer.fit_transform(df['reviewText']).toarray()
     print("Características TF-IDF extraídas.")
 
@@ -31,7 +30,7 @@ def execute_mL(df):
     tfidf_df.columns = [f'tfidf_{i}' for i in range(tfidf_features.shape[1])]
 
     # === MERGE TF-IDF FEATURES ===
-    feature_cols = ['helpfulTotalRatio', 'reviewLength', 'isWeekend', 'productPopularity', 'avgProductRating', 'containsQuestion']
+    feature_cols = ['reviewLength', 'isWeekend', 'containsQuestion']
     tabular_features = df[feature_cols].reset_index(drop=True).rename(columns=lambda x: f'tab_{x}')
 
     features = cudf.concat([tfidf_df, tabular_features], axis=1)
