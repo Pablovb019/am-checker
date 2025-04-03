@@ -173,35 +173,26 @@
       </div>
     </section><!-- /Faq Section -->
     <div class="modal fade" id="analysisModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg-custom">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" data-translate="analysisProgress"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title" data-translate="analysisProgress"><i class="bi bi-graph-up me-2"></i><span></span></h5>
                 </div>
                 <div class="modal-body">
                     <div class="progress-steps">
-                        <div class="step" data-step="1">
+                        <div class="step" data-step="1" data-aos="fade-up" data-aos-delay="100">
                             <div class="step-header">
-                                <span class="step-title" data-translate="fetchingProduct"></span>
-                                <div class="status-indicator">
-                                    <div class="spinner-border spinner-border-sm text-primary d-none" role="status"></div>
-                                    <i class="bi bi-check-circle-fill text-success d-none"></i>
-                                    <i class="bi bi-x-circle-fill text-danger d-none"></i>
-                                </div>
+                                <span class="step-title" data-translate="step1Title"></span>
+                                <div class="spinner-border spinner-border-sm text-primary d-none"></div>
                             </div>
-                            <div class="step-message small text-muted"></div>
+                            <div class="step-message small" data-translate="step1Description"></div>
                         </div>
-                        <div class="step" data-step="2">
+                        <div class="step" data-step="2" data-aos="fade-up" data-aos-delay="200">
                             <div class="step-header">
-                                <span class="step-title" data-translate="analyzingReviews"></span>
-                                <div class="status-indicator">
-                                    <div class="spinner-border spinner-border-sm text-primary d-none" role="status"></div>
-                                    <i class="bi bi-check-circle-fill text-success d-none"></i>
-                                    <i class="bi bi-x-circle-fill text-danger d-none"></i>
-                                </div>
+                                <span class="step-title" data-translate="step2Title"></span>
+                                <div class="spinner-border spinner-border-sm text-primary d-none"></div>
                             </div>
-                            <div class="step-message small text-muted"></div>
+                            <div class="step-message small" data-translate="step2Description"></div>
                         </div>
                     </div>
                 </div>
