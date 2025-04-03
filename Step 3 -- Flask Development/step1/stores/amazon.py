@@ -64,16 +64,16 @@ def amazon_exec(url, country_suffix):
                     raise e
 
             Logger.info("Getting reviews")
-            reviews = scr.get_reviews(country_name, country_suffix)
+            reviews = scr.get_reviews(country_name, country_suffix, product_info["rating"], url)
             Logger.success(f"Reviews obtained. Total reviews: {len(reviews)}")
-            return product_info, reviews
+            return product_id, reviews
         else:
             Logger.info("Last scan was less than a month ago. Not need for rescanning for new reviews")
             Logger.info(f"Loading reviews of product_id '{product_id}' from database")
             try:
                 reviews = db.load_reviews(product_id)
                 Logger.success(f"Loaded reviews of product_id '{product_id}' from database. Total reviews: {len(reviews)}")
-                return product_info, reviews
+                return product_id, reviews
             except Exception as e:
                 if len(e.args) == 4:
                     raise e
@@ -104,7 +104,7 @@ def amazon_exec(url, country_suffix):
 
     if not check_product or flag_lastScan:
         Logger.info("Getting reviews")
-        reviews = scr.get_reviews(country_name, country_suffix, product_info["rating"])
+        reviews = scr.get_reviews(country_name, country_suffix, product_info["rating"], url)
         print("\n") # for output purposes
         Logger.success(f"Reviews obtained. Total reviews: {len(reviews)}")
 
@@ -148,7 +148,7 @@ def amazon_exec(url, country_suffix):
                     reviews = scr.normalize_reviews(reviews, country_suffix)
                     db.save_reviews(product_id, reviews)
                     Logger.success("Reviews saved in database")
-                    return product_info, reviews
+                    return product_id, reviews
                 except Exception as e:
                     if len(e.args) == 4:
                         raise e
