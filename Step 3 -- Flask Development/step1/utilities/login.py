@@ -2,6 +2,7 @@ import step1.utilities.globals as gl
 import step1.utilities.cookies as ck
 
 import os
+import gc
 
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
@@ -11,7 +12,7 @@ from step1.utilities.logger import Logger
 
 def make_login(country, suffix):
     Logger.info(f"Doing Login in Amazon {country}")
-    driver = gl.driver
+    driver = gl.create_driver()
     driver.get(f"https://www.amazon.{suffix}/gp/sign-in.html")
 
     WebDriverWait(driver, 10).until(ec.presence_of_element_located((By.NAME, "email")))
@@ -26,3 +27,7 @@ def make_login(country, suffix):
     Logger.success("Login done. Saving cookies")
 
     ck.save_cookies(driver, f"step1/cookies/amazon_{suffix}.pkl")
+
+    gl.close_driver(driver)
+    del driver
+    gc.collect()

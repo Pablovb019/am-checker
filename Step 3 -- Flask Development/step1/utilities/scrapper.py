@@ -8,6 +8,7 @@ import inspect
 import os
 import langdetect
 import pandas as pd
+import gc
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -56,12 +57,21 @@ def get_full_class_name(obj):
     return module + '.' + obj.__class__.__name__
 
 def get_product_info(url, country_name, country_suffix):
-    driver = gl.driver
+    driver = gl.create_driver()
     if not ck.check_cookies(country_suffix):
         l.make_login(country_name, country_suffix)
     driver.get(url)
 
     name = driver.find_element(By.ID, "productTitle").text
+
+    try:
+        breadcrumb = driver.find_element(By.ID, "wayfinding-breadcrumbs_feature_div")
+        category_links = breadcrumb.find_elements(By.TAG_NAME, "a")
+        category = category_links[0].text
+    except NoSuchElementException:
+        Logger.warning("No category found. Setting category to 'Generic'")
+        category = "Generic"
+
     price = driver.find_element(By.CLASS_NAME, "a-price").text.replace("\n", ",")
     try:
         rating = driver.find_element(By.ID, "acrPopover").get_attribute("title").split(" ")[0]
@@ -78,20 +88,23 @@ def get_product_info(url, country_name, country_suffix):
 
     product_info = {
         "name": name,
+        "category": category,
         "price": normalized_price,
         "rating": rating,
         "country": country_name
     }
 
+    gl.close_driver(driver)
     return product_info
 
 
-def get_reviews(country_name, country_suffix, rating):
+def get_reviews(country_name, country_suffix, rating, url):
     if rating == 0: # Base case, there are no reviews
         return []
 
     reviews = queue.Queue()  # Use a thread-safe queue for storing reviews
-    driver = gl.driver
+    driver = gl.create_driver()
+    driver.get(url)
     driver_pool = WebDriverPool(max_size=psutil.cpu_count(logical=False))
 
     try:
@@ -133,6 +146,9 @@ def get_reviews(country_name, country_suffix, rating):
 
     finally:
         driver_pool.close_all()
+        gl.close_driver(driver)
+        del driver_pool, driver
+        gc.collect()
 
     return list(reviews.queue)
 
@@ -261,7 +277,7 @@ def check_language(reviews):
             if lang != "en":
                 reviews.remove(review)
         except langdetect.lang_detect_exception.LangDetectException:
-            Logger.warning(f"Error detecting language for review {review['id']}")
+            Logger.warning(f"Error detecting language for review {review['id']}. Removing review.")
             reviews.remove(review)
 
     return reviews
