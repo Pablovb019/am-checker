@@ -104,7 +104,7 @@ def save_product(product_id, product_info):
     try:
         conn = db_conn()
         with conn.cursor() as cursor:
-            cursor.execute("INSERT INTO products VALUES (%s, %s, %s, %s, %s, %s)",(product_id, product_info["name"], product_info["price"], product_info["rating"], product_info["country"], datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+            cursor.execute("INSERT INTO products VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",(product_id, product_info["name"], product_info["category"], product_info["price"], product_info["rating"], product_info["country"], datetime.now().strftime("%Y-%m-%d %H:%M:%S"), None, None))
         conn.commit()
         conn.close()
     except Exception as e:
@@ -123,7 +123,9 @@ def load_reviews(product_id):
         conn = db_conn()
         with conn.cursor() as cursor:
             cursor.execute("SELECT * FROM reviews WHERE product_id = %s", (product_id,))
-            result = cursor.fetchall()
+            columns = [desc[0] for desc in cursor.description]
+            data = cursor.fetchall()
+            result = [dict(zip(columns, row)) for row in data]
         conn.close()
         return result
     except Exception as e:
@@ -142,7 +144,7 @@ def save_reviews(product_id, reviews):
         conn = db_conn()
         with conn.cursor() as cursor:
             for review in reviews:
-                cursor.execute("INSERT INTO reviews VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", (review["id"], product_id, False, review["author"], review["rating"], review["date"], review["title"], review["text"]))
+                cursor.execute("INSERT INTO reviews VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", (review["id"], product_id, review["author"], review["rating"], review["date"], review["title"], review["text"], None))
             conn.commit()
         conn.close()
     except Exception as e:

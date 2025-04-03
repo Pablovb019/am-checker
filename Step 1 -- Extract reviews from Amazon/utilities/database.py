@@ -142,7 +142,7 @@ def save_reviews(product_id, reviews):
         conn = db_conn()
         with conn.cursor() as cursor:
             for review in reviews:
-                cursor.execute("INSERT INTO reviews VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", (review["id"], product_id, False, review["author"], review["rating"], review["date"], review["title"], review["text"]))
+                cursor.execute("INSERT INTO reviews VALUES (%s, %s, %s, %s, %s, %s, %s)", (review["id"], product_id, review["author"], review["rating"], review["date"], review["title"], review["text"]))
             conn.commit()
         conn.close()
     except Exception as e:
