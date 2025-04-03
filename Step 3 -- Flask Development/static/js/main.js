@@ -51,6 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateFAQSection();
     updateSection2Section();
     updateAnalyzeModalSection();
+    updateModalSection();
   }
 
   // Aplicar tema inicial
@@ -288,10 +289,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 const validationResult = await validateAmazonUrl(urlInput.value);
 
                 if (validationResult.isValid && form.checkValidity()) {
-                    const modal = new bootstrap.Modal('#analysisModal');
+                    updateAnalyzeModalSection()
+                    const modal = new bootstrap.Modal('#analysisModal', {
+                        backdrop: 'static',
+                        keyboard: false
+                    });
                     modal.show();
-                    await startAnalysisProcess(urlInput.value);
-                    modal.hide();
+
+                    setTimeout(() => {
+                        AOS.refreshHard();
+                        }, 100);
+
+                    const result = await startAnalysisProcess(urlInput.value);
                 } else {
                     showValidationError(urlInput, validationResult.errorType);
                 }
@@ -390,50 +399,86 @@ function updateAnalyzeModalSection() {
 }
 
 async function startAnalysisProcess(url) {
+    let responseStep1;
+    let lang = localStorage.getItem('language') || 'es';
     try {
-        const lang = localStorage.getItem('language') || 'es';
+        updateStepUI(1, 'start', null, translations[lang].step1Description);
+        responseStep1 = await simulateApiCall('/api/fetch-reviews', { url })
+        updateStepUI(1, 'end', null, translations[lang].step1Description_completed);
 
-        updateStepUI(1, translations[lang].step1, translations[lang].step1Description);
-        await simulateApiCall('/api/fetch-reviews', url);
-        updateStepUI(1, translations[lang].step1-completed, translations[lang].step1Description-completed);
-
-        updateStepUI(2, translations[lang].step2, translations[lang].step2Description);
-        await simulateApiCall('/api/ml-model-analysis', url);
-        updateStepUI(2, translations[lang].step2-completed, translations[lang].step2Description-completed);
     } catch (error) {
-        const lang = localStorage.getItem('language') || 'es';
         const step = error.step || 1;
-        updateStepUI(step, translations[lang].errorTitle, translations[lang].errorDescription);
+        updateStepUI(step, 'error', translations[lang].errorTitle_step1, translations[lang].errorDescription_step1);
+        throw error;
+    }
+
+    try {
+        const { product_id, reviews } = responseStep1;
+        updateStepUI(2, 'start', null, translations[lang].step2Description);
+        const responseStep2 = await simulateApiCall('/api/ml-model-analysis', { product_id, reviews });
+        updateStepUI(2, 'end', null, translations[lang].step2Description_completed);
+
+        window.location.href = `/result/${encodeURIComponent(product_id)}`;
+        return responseStep2;
+    } catch (error) {
+        const step = error.step || 2;
+        updateStepUI(step, 'error', translations[lang].errorTitle_step2, translations[lang].errorDescription_step2);
         throw error;
     }
 }
 
-function updateStepUI(stepNumber, status, message) {
+function updateStepUI(stepNumber, status, title, message) {
     const step = document.querySelector(`[data-step="${stepNumber}"]`);
     const spinner = step.querySelector('.spinner-border');
-    const successIcon = step.querySelector('.bi-check-circle-fill');
-    const errorIcon = step.querySelector('.bi-x-circle-fill');
-    const messageElement = step.querySelector('.step-message');
+    const stepTitle = step.querySelector('.step-title');
+    const stepMessage = step.querySelector('.step-message');
+    const actualTheme = localStorage.getItem('theme');
 
-    [spinner, successIcon, errorIcon].forEach(el => el.classList.add('d-none'));
+    // Reset all states
+    spinner.classList.add('d-none');
+    stepTitle.classList.remove('text-success', 'text-danger');
+    stepMessage.classList.remove('text-success', 'text-danger');
+
+    // Update content
+    stepMessage.textContent = message;
 
     switch(status) {
-        case 'started':
-            spinner.classList.remove('d-none');
+        case 'start':
+            spinner.classList.remove('d-none', 'spinner-border-sm');
+            step.style.opacity = '1';
+            step.style.transform = 'translateY(0)';
             break;
-        case 'completed':
-            successIcon.classList.remove('d-none');
+
+        case 'end':
+             if (actualTheme === 'dark') {
+                 stepTitle.classList.add('text-success-dark');
+                stepMessage.classList.add('text-success-dark');
+            } else {
+                stepTitle.classList.add('text-success');
+                stepMessage.classList.add('text-success');
+             }
+            step.style.opacity = '0.8';
             break;
-        case 'failed':
-            errorIcon.classList.remove('d-none');
+
+        case 'error':
+            stepTitle.textContent = title;
+            if (actualTheme === 'dark') {
+                 stepTitle.classList.add('text-danger-dark');
+                stepMessage.classList.add('text-danger-dark');
+            } else {
+                stepTitle.classList.add('text-danger');
+                stepMessage.classList.add('text-danger');
+             }
+            step.style.opacity = '0.8';
             break;
     }
 
-    messageElement.textContent = message;
-
+    // Scroll handling
+    const container = document.querySelector('#analysisModal .modal-body');
+    container.scrollTop = step.offsetTop - container.offsetTop - 20;
 }
 
-async function simulateApiCall(endpoint, url) {
+async function simulateApiCall(endpoint, payload) {
     return new Promise((resolve, reject) => {
         setTimeout(async () => {
             try {
@@ -442,7 +487,7 @@ async function simulateApiCall(endpoint, url) {
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ url })
+                    body: JSON.stringify({ payload })
                 });
 
                 if (!response.ok) {
@@ -450,7 +495,8 @@ async function simulateApiCall(endpoint, url) {
                     error.step = endpoint === '/api/fetch-product' ? 1 : 2;
                     throw error;
                 }
-                resolve();
+                const result = await response.json();
+                resolve(result);
             } catch (error) {
                 reject({
                     message: 'Failed to complete operation',
@@ -459,4 +505,18 @@ async function simulateApiCall(endpoint, url) {
             }
         }, 2000); // Simulate API delay
     });
+}
+
+function updateModalSection() {
+    const modal = document.getElementById('analysisModal');
+    if (!modal) return;
+
+    const isDark = document.body.classList.contains('dark-theme');
+    modal.classList.toggle('dark-background', isDark);
+    modal.classList.toggle('light-background', !isDark);
+
+    if (modal.classList.contains('show')) {
+        modal.style.display = 'none';
+        setTimeout(() => modal.style.display = 'block', 10);
+    }
 }
