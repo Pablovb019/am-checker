@@ -63,6 +63,10 @@ def get_product_info(url, country_name, country_suffix):
     driver.get(url)
 
     name = driver.find_element(By.ID, "productTitle").text
+    try:
+        description = driver.find_element(By.ID, "productDescription").text
+    except NoSuchElementException:
+        description = "NA"
 
     try:
         breadcrumb = driver.find_element(By.ID, "wayfinding-breadcrumbs_feature_div")
@@ -86,12 +90,17 @@ def get_product_info(url, country_name, country_suffix):
     elif ',' in normalized_price:
         normalized_price = normalized_price.replace(',', '.')
 
+    image_url = driver.find_element(By.ID, "landingImage").get_attribute("src")
+
     product_info = {
         "name": name,
+        "description": description,
         "category": category,
         "price": normalized_price,
         "rating": rating,
-        "country": country_name
+        "country": country_name,
+        "country_suffix": country_suffix,
+        "image_url": image_url,
     }
 
     gl.close_driver(driver)

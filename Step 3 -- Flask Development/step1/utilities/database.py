@@ -104,7 +104,7 @@ def save_product(product_id, product_info):
     try:
         conn = db_conn()
         with conn.cursor() as cursor:
-            cursor.execute("INSERT INTO products VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",(product_id, product_info["name"], product_info["category"], product_info["price"], product_info["rating"], product_info["country"], datetime.now().strftime("%Y-%m-%d %H:%M:%S"), None, None))
+            cursor.execute("INSERT INTO products VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",(product_id, product_info["name"], product_info["description"], product_info["category"], product_info["price"], product_info["rating"], product_info["country"], product_info["country_suffix"], product_info["image_url"], datetime.now().strftime("%Y-%m-%d %H:%M:%S"), None, None))
         conn.commit()
         conn.close()
     except Exception as e:
