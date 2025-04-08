@@ -55,7 +55,7 @@ def predict(product_id, reviews):
 
             # Predict
             Logger.info("Making predictions...")
-            predictions = model.predict_proba(features)[:, 1] # Probability of class 1 (being SPAM review)
+            predictions = model.predict_proba(features)[:, 0] # Probability of class 0 (not spam)
             Logger.success("Predictions made successfully.")
 
             # Memory cleanup
