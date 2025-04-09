@@ -69,7 +69,7 @@
         </div>
         </div>
     </section>
-    <section id="section2" class="section section2 light-background">
+    <section id="section2" class="section section2">
         <div class="container service-item mb-lg-4" data-aos="fade-up" data-aos-delay="200">
             <div class="row">
                 <div class="col-lg-6 order-2 order-lg-1 mt-3 mt-lg-0 d-flex flex-column justify-content-center">
@@ -104,7 +104,7 @@
     </div>
         <div class="line-separator" data-aos="fade-up" data-aos-delay="200"></div>
     </section>
-    <section class="faq-9 faq section light-background" id="faq">
+    <section class="faq-9 faq section" id="faq">
         <div class="container">
           <div class="row">
             <div class="col-lg-5" data-aos="fade-up">
@@ -172,18 +172,21 @@
         </div>
       </div>
     </section><!-- /Faq Section -->
-    <div class="modal fade" id="analysisModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg-custom">
+    <div class="modal fade" id="analysisModal" tabindex="-1" data-bs-theme="auto" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl h-100">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" data-translate="analysisProgress"><i class="bi bi-graph-up me-2"></i><span></span></h5>
+                    <button type="button" class="btn-close d-none" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body d-flex flex-column">
                     <div class="progress-steps">
                         <div class="step" data-step="1" data-aos="fade-up" data-aos-delay="100">
                             <div class="step-header">
                                 <span class="step-title" data-translate="step1Title"></span>
                                 <div class="spinner-border spinner-border-sm text-primary d-none"></div>
+                                <i class="check-icon bi bi-check-circle-fill d-none"></i>
+                                <i class="error-icon bi bi-x-circle-fill d-none"></i>
                             </div>
                             <div class="step-message small" data-translate="step1Description"></div>
                         </div>
@@ -191,6 +194,8 @@
                             <div class="step-header">
                                 <span class="step-title" data-translate="step2Title"></span>
                                 <div class="spinner-border spinner-border-sm text-primary d-none"></div>
+                                <i class="check-icon bi bi-check-circle-fill d-none"></i>
+                                <i class="error-icon bi bi-x-circle-fill d-none"></i>
                             </div>
                             <div class="step-message small" data-translate="step2Description"></div>
                         </div>
