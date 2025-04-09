@@ -18,13 +18,17 @@
 }
 
 
-:root { 
+:root {
   --background-color: #ffffff;
   --default-color: #212529;
   --heading-color: #2d465e;
   --accent-color: #0d83fd;
   --surface-color: #ffffff;
   --contrast-color: #ffffff;
+  --secondary-color: #22bfbf;
+  --success-color: #4ade80;
+  --danger-color: #f87171;
+  --warning-color: #f59e0b;
 }
 
 
@@ -35,6 +39,8 @@
   --nav-dropdown-background-color: #ffffff;
   --nav-dropdown-color: #212529;
   --nav-dropdown-hover-color: #0d83fd;
+  --chart-grid-color: rgba(226, 232, 240, 0.2);
+  --chart-text-color: rgba(141, 146, 151, 0.9);
 }
 
 /* Color Presets - These classes override global colors when applied to any section or element, providing reuse of the sam color scheme. */
@@ -42,6 +48,7 @@
 .light-background {
   --background-color: #f3f9ff;
   --surface-color: #ffffff;
+
 }
 
 .dark-background {
@@ -61,16 +68,21 @@
 body.dark-theme {
   --accent-color: #7dd3fc;
   --background-color: #1e293b;
+  background-color: #1a1d24;
+  color: #f8f9fa;
   --default-color: #e2e8f0;
   --heading-color: #f8fafc;
   --surface-color: #1e293b;
-  --contrast-color: #0f172a;
+  --contrast-color: #e2e8f0;
+  --secondary-color: #22bfbf;
   --nav-color: #94a3b8;
   --nav-hover-color: #7dd3fc;
   --nav-mobile-background-color: #1e293b;
   --nav-dropdown-background-color: #334155;
   --nav-dropdown-color: #cbd5e1;
   --nav-dropdown-hover-color: #7dd3fc;
+  --chart-grid-color: rgba(226, 232, 240, 0.2);
+  --chart-text-color: rgba(141, 146, 151, 0.9);
 }
 
 
@@ -107,7 +119,11 @@ body.dark-theme .header .btn-changeTheme i {
 }
 
 body.dark-theme p {
-  color: color-mix(in srgb, var(--default-color), transparent 10%);
+  color: color-mix(in srgb, var(--default-color), transparent 10%) !important;
+}
+
+body.dark-theme small {
+  color: color-mix(in srgb, var(--default-color), transparent 20%) !important;
 }
 
 body.dark-theme .header .header-container {
@@ -122,6 +138,7 @@ body {
   background-color: var(--background-color);
   font-family: var(--default-font);
   transition: background-color 0.3s ease, color 0.3s ease;
+  --modal-close-brightness: 0.5;
 }
 
 @keyframes icon-pulse {
@@ -147,7 +164,7 @@ h3,
 h4,
 h5,
 h6 {
-  color: var(--heading-color);
+  color: var(--heading-color) !important;
   font-family: var(--heading-font);
 }
 
@@ -639,6 +656,27 @@ section,
   width: 50px;
   height: 3px;
   background: var(--accent-color);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+}
+
+.section-subtitle h3{
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    position: relative;
+}
+
+.section-subtitle h3:after {
+  content: "";
+  position: absolute;
+  display: block;
+  width: 50px;
+  height: 3px;
+  background: var(--nav-hover-color);
   left: 0;
   right: 0;
   bottom: 0;
@@ -1426,7 +1464,11 @@ body.dark-theme {
 }
 
 #analysisModal .step-header {
-  display: block !important;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
   width: 100%;
 }
 
@@ -1456,7 +1498,9 @@ body.dark-theme {
   width: 1.5rem;
   height: 1.5rem;
   border-width: 0.15em;
-  position: absolute !important;
+  position: static;
+  transform: none;
+  margin-left: auto;
   right: 1rem !important;
   left: auto !important;
   top: 50%;
@@ -1468,6 +1512,17 @@ body.dark-theme {
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+#analysisModal .check-icon,
+#analysisModal .error-icon {
+  position: static;
+  transform: none;
+  margin-left: auto;
+  right: 1rem !important;
+  left: auto !important;
+  top: 50%;
+  margin-top: -0.75rem;
 }
 
 #analysisModal .step[data-aos="fade-up"] {
@@ -1492,13 +1547,15 @@ body.dark-theme #analysisModal .step {
 }
 
 body.dark-theme #analysisModal .step-title.text-success-dark,
-body.dark-theme #analysisModal .step-message.text-success-dark {
-  color: #4ade80;
+body.dark-theme #analysisModal .step-message.text-success-dark,
+body.dark-theme #analysisModal .check-icon.text-success-dark {
+  color: var(--success-color);
 }
 
 body.dark-theme #analysisModal .step-title.text-danger-dark,
-body.dark-theme #analysisModal .step-message.text-danger-dark {
-  color: #f87171;
+body.dark-theme #analysisModal .step-message.text-danger-dark,
+body.dark-theme #analysisModal .error-icon.text-danger-dark {
+  color: var(--danger-color);
 }
 
 body.dark-theme #analysisModal .spinner-border {
@@ -1516,4 +1573,958 @@ body.dark-theme #analysisModal .spinner-border {
     font-size: 1rem;
     max-width: 75%;
   }
+}
+
+/*--------------------------------------------------------------
+# Result.html Style Section
+--------------------------------------------------------------*/
+/* Product Information Section */
+#productInfo {
+  padding: 120px 0;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent-color), transparent 95%) 0%,
+    color-mix(in srgb, var(--accent-color), transparent 98%) 50%,
+    transparent 100%
+  );
+  position: relative;
+  overflow: hidden;
+}
+
+#productInfo::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 90% 10%,
+    color-mix(in srgb, var(--accent-color), transparent 92%),
+    transparent 40%);
+  pointer-events: none;
+}
+
+/* Progress Circles */
+.section-circle .progress-circle-container {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  margin: 2rem auto;
+}
+
+.section-circle .circle-progress canvas {
+  width: 100% !important;
+  height: 100% !important;
+  transform: rotate(-90deg);
+}
+
+.section-circle .circle-text-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--heading-font), sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--heading-color);
+  text-align: center;
+  width: 100%;
+  padding: 0 15px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Analysis Results Section */
+#analysisResults {
+  padding: 80px 0;
+  position: relative;
+  z-index: 1;
+}
+
+.line-separator {
+  width: 80%;
+  height: 3px;
+  background: color-mix(in srgb, var(--accent-color), transparent 90%);
+  margin: 3rem auto;
+}
+
+/* Review Cards */
+.review-card {
+  background: var(--surface-color);
+  border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);
+  border-radius: 12px;
+  transition: opacity 0.3s ease, transform 0.3s ease, box-shadow 0.2s ease;
+  will-change: opacity, transform;
+  overflow: hidden;
+}
+
+.review-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--accent-color), transparent 92%);
+}
+
+.review-card .col-4 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0 !important; /* Opcional: elimina margen superior que pueda desplazarlo */
+}
+
+.rating-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.9rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  background: color-mix(in srgb, var(--accent-color), transparent 92%);
+  color: var(--heading-color);
+}
+
+/* Text Truncation System */
+.review-text-container {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.review-text-container.truncated .review-text {
+  display: -webkit-box !important;
+  -webkit-line-clamp: 3 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+  max-height: 4.5em !important;
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.expand-toggle {
+  color: var(--accent-color);
+  cursor: pointer;
+  font-weight: 500;
+  display: inline-block;
+  margin-top: 0.5rem;
+  transition: opacity 0.3s ease;
+}
+
+.expand-toggle:hover {
+  opacity: 0.8;
+}
+
+/* Dark Mode Adjustments */
+body.dark-theme {
+  #productInfo {
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--accent-color), transparent 95%) 0%,
+      color-mix(in srgb, var(--accent-color), transparent 98%) 50%,
+      transparent 100%
+    );
+  }
+
+  .circle-text-overlay {
+    color: var(--heading-color) !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  .review-card {
+    border-color: color-mix(in srgb, var(--default-color), transparent 70%);
+  }
+
+  .rating-badge {
+    background: color-mix(in srgb, var(--accent-color), transparent 85%);
+    color: var(--contrast-color);
+  }
+
+  .review-text {
+    color: color-mix(in srgb, var(--default-color), transparent 15%);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  #productInfo {
+    padding: 80px 0;
+  }
+
+  .progress-circle-container {
+    width: 130px;
+    height: 130px;
+  }
+
+  .circle-text-overlay {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 576px) {
+  #productInfo {
+    padding: 80px 0;
+  }
+
+  .review-card {
+    margin-bottom: 1.5rem;
+  }
+
+  .progress-circle-container {
+    width: 110px;
+    height: 110px;
+    margin: 1rem auto;
+  }
+
+  .circle-text-overlay {
+    font-size: 18px;
+  }
+}
+
+/* Ajustes para el modal */
+.modal-content {
+  background: var(--surface-color) !important;
+  color: var(--default-color) !important;
+  border: 1px solid color-mix(in srgb, var(--default-color), transparent 70%) !important;
+}
+
+.modal-header {
+  border-bottom-color: color-mix(in srgb, var(--default-color), transparent 85%) !important;
+}
+
+.modal-footer {
+  border-top-color: color-mix(in srgb, var(--default-color), transparent 85%) !important;
+}
+
+.btn-close {
+  filter: invert(1) brightness(var(--modal-close-brightness, 1)) !important;
+}
+
+.modal-dynamic-height .modal-content {
+    transition: height 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), padding 0.3s ease;
+}
+
+.review-text-container {
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+body.dark-theme {
+  --modal-close-brightness: 2; /* Hace el icono de cerrar más brillante en oscuro */
+}
+
+/* Pagination Controls */
+#paginationInfo {
+    font-weight: 500;
+    color: var(--heading-color);
+}
+
+#prevPage, #nextPage {
+    min-width: 40px;
+    margin: 0 3px;
+    transition: all 0.3s ease;
+}
+
+#prevPage:hover, #nextPage:hover {
+    background-color: color-mix(in srgb, var(--accent-color), transparent 92%);
+    border-color: var(--accent-color);
+}
+
+#allReviewsModal .col-12 {
+    transition: none !important;
+    margin-bottom: 1rem;
+}
+
+#allReviewsModal .pagination-controls {
+    position: sticky;
+    top: 0;
+    background: var(--surface-color);
+    z-index: 1000;
+    padding: 15px 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);
+}
+
+#allReviewsModal .modal-dialog {
+    max-width: 90%;
+    min-height: 95vh;
+}
+
+#allReviewsModal .modal-content {
+    border-radius: 12px;
+}
+
+#allReviewsModal .modal-body {
+    background-color: var(--surface-color) !important;
+    flex: 1;
+    padding: 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 120px);
+}
+
+#reviewsContainer {
+    flex: 1;
+    min-height: 300px;
+    overflow-y: auto;
+    padding: 0.5rem 0;
+}
+
+#allReviewsModal .modal-body .col-12 {
+    transition: opacity 0.3s ease, transform 0.3s ease !important;
+}
+
+/* Scrollbar Config */
+/* Firefox */
+#allReviewsModal .modal-body {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-color) var(--surface-color);
+}
+
+/* WebKit (Chrome, Safari, Edge) */
+#allReviewsModal .modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+#allReviewsModal .modal-body::-webkit-scrollbar-track {
+  background: var(--surface-color);
+}
+
+#allReviewsModal .modal-body::-webkit-scrollbar-thumb {
+  background-color: var(--accent-color);
+  border-radius: 4px;
+  border: 2px solid var(--surface-color);
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  #allReviewsModal .modal-dialog {
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
+    padding: 10px;
+  }
+
+  #allReviewsModal .modal-body {
+    padding: 0.75rem;
+    overflow-y: auto;
+    max-height: calc(100vh - 80px);
+  }
+
+  #allReviewsModal .pagination-controls {
+    position: relative;
+    top: 0;
+    padding: 8px 0;
+    border-bottom: none;
+  }
+
+  /* Progress Circles Adjust */
+    .progress-circle-container {
+        width: 90px;
+        height: 90px;
+    }
+
+    .circle-text-overlay {
+        font-size: 16px;
+    }
+}
+
+/*--------------------------------------------------------------
+# Recent.html Style Section
+--------------------------------------------------------------*/
+.recent-products-section {
+    padding: 120px 0;
+    background: linear-gradient(135deg,
+        color-mix(in srgb, var(--accent-color), transparent 95%) 0%,
+        color-mix(in srgb, var(--accent-color), transparent 98%) 50%,
+        transparent 100%
+    );
+    position: relative;
+    overflow: hidden;
+}
+
+.recent-products-section .product-card {
+    background: var(--surface-color);
+    border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);
+    border-radius: 12px;
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease,
+        border-color 0.3s ease;
+}
+
+.recent-products-section .product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px color-mix(in srgb, var(--accent-color), transparent 92%);
+    border-color: color-mix(in srgb, var(--accent-color), transparent 70%);
+}
+
+/* Progress Circle - Small */
+.recent-progress-circle {
+    width: 80px;
+    height: 80px;
+    position: relative;
+    margin-left: auto;
+}
+
+.recent-progress-circle .circle-text-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    line-height: 1.2;
+    pointer-events: none;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    white-space: nowrap;
+    padding: 0 5px;
+    font-size: 0.85em;
+    width: auto;
+}
+
+/* Card Content Alignment */
+.product-card-body .meta-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 1.2rem;
+}
+
+/* Dark Mode */
+body.dark-theme .recent-products-section .alert-info {
+    background-color: color-mix(in srgb, var(--accent-color), transparent 92%);
+    border-color: color-mix(in srgb, var(--accent-color), transparent 85%);
+    color: var(--accent-color);
+}
+
+/* Responsive */
+@media (max-width: 993px) {
+    .recent-products-section {
+        padding: 80px 0;
+    }
+}
+
+/*--------------------------------------------------------------
+# Error.html Style Section
+--------------------------------------------------------------*/
+.error-section{
+    padding-top: 160px;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--accent-color), transparent 95%) 0%, color-mix(in srgb, var(--accent-color), transparent 98%) 50%, transparent 100%);
+    position: relative;
+    overflow: hidden;
+    padding-bottom: 522px; /* Ajusta el padding inferior según sea necesario para bajar el footer */
+}
+
+/* Dark Mode Adjustments */
+body.dark-theme .error-section {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--accent-color), transparent 95%) 0%, color-mix(in srgb, var(--accent-color), transparent 98%) 50%, transparent 100%);
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .error-section {
+        padding-top: 80px;
+    }
+}
+
+/*--------------------------------------------------------------
+# Stats.html Style Section
+--------------------------------------------------------------*/
+.stats-section {
+  padding: 180px 0;
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent-color), transparent 98%) 0%,
+    transparent 100%
+  );
+}
+
+/* Main Container */
+.stats-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.review-date-chart {
+  min-height: 300px;
+}
+
+/* Date selector */
+.date-range-selector {
+  display: inline-flex;
+  gap: 12px;
+  padding: 15px 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-color) transparent;
+}
+
+.date-range-selector::-webkit-scrollbar {
+  height: 6px;
+}
+
+.date-range-selector::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--accent-color), transparent 60%);
+  border-radius: 4px;
+}
+
+.date-pill {
+  padding: 10px 24px;
+  border-radius: 50px;
+  background: color-mix(in srgb, var(--accent-color), transparent 92%);
+  color: var(--accent-color);
+  font-family: var(--heading-font);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  border: 1px solid color-mix(in srgb, var(--accent-color), transparent 80%);
+  white-space: nowrap;
+}
+
+.date-pill:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent-color), transparent 90%);
+}
+
+.date-pill.active {
+  background: var(--success-color) !important;
+  color: var(--contrast-color) !important;
+  border-color: var(--success-color);
+  cursor: default;
+  box-shadow: 0 3px 8px color-mix(in srgb, var(--success-color), transparent 80%);
+}
+
+/* Metrics Cards */
+.metric-card {
+    background: var(--surface-color);
+    border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.metric-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--accent-color), transparent 95%);
+}
+
+.metric-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+}
+
+.metric-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.metric-icon.primary-icon i{
+  font-size: 1.5rem;
+  padding: 0.75rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent-color), transparent 92%);
+  color: var(--accent-color);
+}
+
+.metric-icon.danger-icon i {
+  font-size: 1.5rem;
+  padding: 0.75rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--danger-color), transparent 92%);
+  color: var(--danger-color);
+}
+
+.metric-icon.success-icon i {
+  font-size: 1.5rem;
+  padding: 0.75rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--success-color), transparent 92%);
+  color: var(--success-color);
+}
+
+.metric-icon.warning-icon i {
+  font-size: 1.5rem;
+  padding: 0.75rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--warning-color), transparent 92%);
+  color: var(--warning-color);
+}
+
+.metric-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--heading-color);
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--heading-color);
+    margin-bottom: 0.5rem;
+    font-family: var(--heading-font);
+}
+
+.metric-label {
+    font-size: 0.9rem;
+    color: color-mix(in srgb, var(--default-color), transparent 40%);
+    margin: 0;
+}
+
+/* Graphics */
+.chart-container {
+  margin: 60px 0;
+  position: relative;
+}
+
+.stats-section .chart-container {
+  position: relative;
+  height: 30vh;
+}
+
+.chart-card {
+  background: var(--surface-color);
+  border-radius: 20px;
+  padding: 2rem;
+  border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);
+  box-shadow: 0 8px 32px color-mix(in srgb, var(--accent-color), transparent 98%);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chart-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--accent-color), transparent 95%);
+}
+
+.chart-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid color-mix(in srgb, var(--accent-color), transparent 90%);
+}
+
+.chart-title {
+  font-size: 1.5rem;
+  color: var(--heading-color);
+  margin: 0;
+}
+
+/* Grafico de autenticidad */
+.authenticity-chart {
+    position: relative;
+    padding: 1rem;
+}
+
+.chart-legend {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    background: color-mix(in srgb, var(--surface-color), transparent 95%);
+}
+
+.legend-badge {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.authenticity-chart .legend-item.authentic .legend-badge {
+    background: var(--accent-color);
+}
+
+.authenticity-chart .legend-item.robotized .legend-badge {
+    background: var(--secondary-color);
+}
+
+/* ===== Tarjetas de categorías ===== */
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    height: 100%;
+}
+
+.category-card {
+    background: var(--surface-color);
+    border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--accent-color), transparent 95%);
+}
+
+.metric-header,
+.category-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.category-header i {
+    font-size: 1.5rem;
+    padding: 0.75rem;
+    border-radius: 50%;
+}
+
+.category-card.best .category-header i {
+    background: color-mix(in srgb, var(--success-color), transparent 92%);
+    color: var(--success-color);
+}
+
+.category-card.worst .category-header i {
+    background: color-mix(in srgb, var(--danger-color), transparent 92%);
+    color: var(--danger-color);
+}
+
+.category-card.neutre .category-header i {
+    background: color-mix(in srgb, var(--accent-color), transparent 92%);
+    color: var(--accent-color);
+}
+
+.category-card.best .progress-bar::after {
+    background: var(--success-color);
+}
+
+.category-card.worst .progress-bar::after {
+    background: #dc3545;
+}
+
+.category-card.neutre .progress-bar::after {
+    background: var(--accent-color);
+}
+
+.percentage {
+    font-weight: 600;
+    font-family: var(--heading-font);
+    color: var(--heading-color);
+}
+
+/* Dark Mode Adjustments */
+body.dark-theme {
+  .stats-section {
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--accent-color), transparent 98%) 0%,
+      var(--background-color) 100%
+    );
+  }
+
+  .date-pill {
+    background: color-mix(in srgb, var(--accent-color), transparent 95%) !important;
+    border-color: color-mix(in srgb, var(--accent-color), transparent 85%);
+  }
+
+  .date-pill.active {
+    background: var(--success-color) !important;
+    border-color: var(--success-color) !important;
+    box-shadow: 0 3px 8px color-mix(in srgb, var(--success-color), transparent 80%);
+  }
+
+  .metric-card {
+    background: color-mix(in srgb, var(--surface-color), transparent 5%);
+    border-color: color-mix(in srgb, var(--default-color), transparent 85%);
+  }
+
+  .chart-card {
+    background: color-mix(in srgb, var(--surface-color), transparent 5%);
+    border-color: color-mix(in srgb, var(--default-color), transparent 85%);
+    box-shadow: 0 8px 32px color-mix(in srgb, var(--accent-color), transparent 98%);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .chart-container canvas {
+    background-color: var(--surface-color);
+    border-radius: 12px;
+  }
+
+  .chartjs-render-monitor {
+    color: var(--default-color) !important;
+  }
+
+  .chartjs-grid line {
+    stroke: var(--chart-grid-color) !important;
+  }
+
+  .chartjs-axis-tick text{
+    fill: var(--chart-text-color) !important;
+  }
+
+  .chartjs-axis-title {
+    fill: var(--default-color) !important;
+  }
+
+  .chartjs-tooltip {
+    background: var(--surface-color) !important;
+    border: 1px solid var(--accent-color) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+    padding: 12px !important;
+  }
+
+  .chartjs-tooltip-key {
+    background: var(--accent-color) !important;
+  }
+
+  .category-card {
+        background: color-mix(in srgb, var(--surface-color), transparent 5%);
+        border-color: color-mix(in srgb, var(--default-color), transparent 85%);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .metric-icon.primary-icon i {
+    background: color-mix(in srgb, var(--accent-color), transparent 88%);
+  }
+
+  .metric-icon.success-icon i{
+    background: color-mix(in srgb, var(--success-color), transparent 88%);
+  }
+
+  .metric-icon.danger-icon i {
+    background: color-mix(in srgb, var(--danger-color), transparent 88%);
+  }
+
+  .metric-icon.warning-icon i {
+    background: color-mix(in srgb, var(--warning-color), transparent 88%);
+  }
+
+    .category-card.best .category-header i {
+        background: color-mix(in srgb, var(--success-color), transparent 88%);
+    }
+
+    .category-card.worst .category-header i {
+        background: color-mix(in srgb, var(--danger-color), transparent 88%);
+    }
+
+    .category-card.neutre .category-header i {
+        background: color-mix(in srgb, var(--accent-color), transparent 88%);
+    }
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .stats-section {
+    padding: 100px 0;
+  }
+
+  .metric-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .date-range-selector {
+    margin: 20px -15px;
+    padding: 10px 15px;
+  }
+
+  .date-pill {
+    padding: 8px 20px;
+    font-size: 0.9rem;
+  }
+
+  .metric-card {
+    padding: 1.2rem;
+  }
+
+  .metric-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 1.3rem;
+  }
+
+  .metric-value {
+    font-size: 1.75rem;
+  }
+
+  .categories-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .metric-header {
+        gap: 0.75rem;
+    }
+
+    .metric-title {
+        font-size: 1rem;
+    }
+
+    .metric-value {
+        font-size: 1.5rem;
+    }
+
+    .metric-label {
+        font-size: 0.85rem;
+    }
+
+    .categories-grid {
+      grid-template-columns: 1fr !important;
+      gap: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+  .stats-section {
+    padding: 100px 0;
+  }
+
+  .stats-section .chart-container {
+    height: 20vh;
+  }
+
+  .metric-card {
+        margin-bottom: 1rem;
+    }
+
+    .metric-icon {
+        width: 42px;
+        height: 42px;
+        font-size: 1.2rem;
+    }
+
+    .metric-value {
+        font-size: 1.4rem;
+    }
+
+  .chart-card {
+    padding: 1.5rem;
+    border-radius: 12px;
+  }
+
+  .categories-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-legend {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .category-card {
+        padding: 1.25rem;
+    }
 }
