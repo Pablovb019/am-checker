@@ -1,0 +1,180 @@
+{% extends "basic/base.html" %}
+
+{% block title %}
+    <title data-translate="statsPageTitle"></title>
+{% endblock %}
+
+{% block content %}
+    <section id="siteStats" class="section stats-section">
+        <div class="container">
+            <!-- Bloque 1: Gráfico histórico fijo -->
+            <div class="section-title" data-aos="fade-up">
+                <h2 data-translate="statsTitle"></h2>
+                <h5 data-translate="statsSubtitle"></h5>
+                <p data-translate="statsImportantNotice"></p>
+                <div class="chart-card mt-4" data-aos="zoom-in">
+                    <div class="chart-container review-date-chart">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bloque 2: Datos específicos por fecha -->
+            <div class="date-section">
+                <div class="section-title" data-aos="fade-up">
+                    <h2 data-translate="statsDateTitle"></h2>
+                    <p class="text-muted" data-translate="statsDateSubtitle"></p>
+                    <!-- Selector de fechas -->
+                    <div class="date-range-selector mb-5" data-aos="fade-up">
+                        {% for stat in site_stats %}
+                            <div class="date-pill{% if loop.first %} active{% endif %}" data-date="{{ stat.snapshot_date }}" data-index="{{ loop.index0 }}">{{ stat.snapshot_date.strftime('%d/%m') }}</div>
+                        {% endfor %}
+                    </div>
+
+                <!-- Métricas y gráficos específicos -->
+                <div class="row gy-4 pb-5">
+                    <h3 data-translate="statsMetricsTitle"></h3>
+                    <!-- Tarjetas de métricas -->
+                    <div class="col-12">
+                        <div class="row metric-cards">
+                            <!-- Productos -->
+                            <div class="col-md-6 col-lg-3" data-aos="fade-up">
+                                <div class="metric-card">
+                                    <div class="metric-header">
+                                        <div class="metric-icon primary-icon"><i class="bi bi-box-seam"></i></div>
+                                        <h3 class="metric-title" data-translate="statsProductsTitle"></h3>
+                                    </div>
+                                    <div class="metric-value" id="totalProducts">{{ "{:,}".format(site_stats[-1].total_products) if site_stats else 0 }}</div>
+                                    <p class="metric-label" data-translate="statsTotalProducts"></p>
+                                </div>
+                            </div>
+
+                            <!-- Reviews -->
+                            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="100">
+                                <div class="metric-card">
+                                    <div class="metric-header">
+                                        <div class="metric-icon danger-icon"><i class="bi bi-chat-square-text"></i></div>
+                                        <h3 class="metric-title" data-translate="statsReviewsTitle"></h3>
+                                    </div>
+                                    <div class="metric-value" id="totalReviews">{{ "{:,}".format(site_stats[-1].total_reviews) if site_stats else 0 }}</div>
+                                    <p class="metric-label" data-translate="statsTotalReviews"></p>
+                                </div>
+                            </div>
+
+                            <!-- Usuarios -->
+                            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="200">
+                                <div class="metric-card">
+                                    <div class="metric-header">
+                                        <div class="metric-icon success-icon"><i class="bi bi-person-check"></i></div>
+                                        <h3 class="metric-title" data-translate="statsUsersTitle"></h3>
+                                    </div>
+                                    <div class="metric-value" id="activeUsers">{{ "{:,}".format(site_stats[-1].total_users) if site_stats else 0 }}</div>
+                                    <p class="metric-label" data-translate="statsTotalUsers"></p>
+                                </div>
+                            </div>
+
+                            <!-- Autenticidad -->
+                            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="300">
+                                <div class="metric-card">
+                                    <div class="metric-header">
+                                        <div class="metric-icon warning-icon"><i class="bi bi-graph-up-arrow"></i>
+                                        </div>
+                                        <h3 class="metric-title" data-translate="statsAuthenticityTitle"></h3>
+                                    </div>
+                                    <div class="metric-value" id="avgAuthenticity">
+                                        {{ "%0.2f"|format(site_stats[-1].percent_authentic_products) if site_stats else 0 }}%
+                                    </div>
+                                    <p class="metric-label" data-translate="statsAvgAuthenticity"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Otros gráficos y métricas -->
+            <div class="row gy-4 pb-5">
+                <!-- Gráfico de autenticidad -->
+                <div class="col-lg-4 col-12" data-aos="fade-up" data-aos-delay="100">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h5 class="chart-title text-center mb-4" data-translate="statsAuthenticityDistribution"></h5>
+                        </div>
+                        <div class="chart-container authenticity-chart">
+                            <canvas id="categoryChart"></canvas>
+                            <div class="chart-legend">
+                                <div class="legend-item authentic">
+                                    <span class="legend-badge"></span>
+                                    <span id="authenticPercent">{{ "{:,}".format(site_stats[-1].percent_authentic_products) if site_stats else 0 }}%</span>
+                                </div>
+                                <div class="legend-item robotized">
+                                    <span class="legend-badge"></span>
+                                    <span id="robotizedPercent">{{ "{:,}".format(site_stats[-1].percent_robotized_reviews) if site_stats else 0 }}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Categorías destacadas -->
+                <div class="col-lg-8 col-12" data-aos="fade-up" data-aos-delay="100">
+                    <div class="categories-grid">
+                        <!-- Mejor categoría autenticidad productos -->
+                        <div class="category-card best">
+                            <div class="category-header">
+                                <i class="bi bi-trophy"></i>
+                                <h5 class="category-title" data-translate="statsBestCategoryAuthenticProducts"></h5>
+                            </div>
+                            <h5 class="category-name metric-value">{{ site_stats[-1].best_category_authentic_products }}</h5>
+                        </div>
+
+                        <!-- Mejor categoría reseñas auténticas -->
+                        <div class="category-card best">
+                            <div class="category-header">
+                                <i class="bi bi-star"></i>
+                                <h5 class="category-title" data-translate="statsBestCategoryAuthenticReviews"></h5>
+                            </div>
+                            <h5 class="category-name metric-value">{{ site_stats[-1].best_category_reviews_authentic }}</h5>
+                        </div>
+
+                        <!-- Peor categoría productos robotizados -->
+                        <div class="category-card worst">
+                            <div class="category-header">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                <h5 class="category-title" data-translate="statsWorstCategoryRobotizedProducts"></h5>
+                            </div>
+                            <h5 class="category-name metric-value">{{ site_stats[-1].worst_category_robotized_products }}</h5>
+                        </div>
+
+                        <!-- Peor categoría reseñas robotizadas -->
+                        <div class="category-card worst">
+                            <div class="category-header">
+                                <i class="bi bi-robot"></i>
+                                <h5 class="category-title" data-translate="statsWorstCategoryRobotizedReviews"></h5>
+                            </div>
+                            <h5 class="category-name metric-value">{{ site_stats[-1].worst_category_reviews_robotized }}</h5>
+                        </div>
+
+                        <!-- Día más análisis -->
+                        <div class="category-card neutre">
+                            <div class="category-header">
+                                <i class="bi bi-calendar"></i>
+                                <h5 class="category-title" data-translate="statsBestDay"></h5>
+                            </div>
+                            <h5 class="category-name metric-value">{{ site_stats[-1].day_most_analysis }}</h5>
+                        </div>
+
+                        <!-- Intervalo hora más análisis -->
+                        <div class="category-card neutre">
+                            <div class="category-header">
+                                <i class="bi bi-clock"></i>
+                                <h5 class="category-title" data-translate="statsHourMostAnalysis"></h5>
+                            </div>
+                            <h5 class="category-name metric-value">{{ site_stats[-1].hour_interval_most_analysis }}</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </section>
+    <div id="statsDataContainer" data-stats="{{ site_stats|tojson|forceescape|default('[]') }}" style="display: none;"></div>
+{% endblock %}
