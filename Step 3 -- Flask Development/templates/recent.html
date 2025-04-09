@@ -1,0 +1,49 @@
+{% extends "basic/base.html" %}
+
+{% block title %}
+    <title data-translate="recentsPageTitle"></title>
+{% endblock %}
+
+{% block content %}
+    <section id="recentProducts" class="section recent-products-section">
+        <div class="container" data-aos="fade-up">
+            <div class="section-title" id="recentProductsTitle">
+                <h2 data-translate="recentProductsTitle"></h2>
+                <p class="text-muted text-center" data-translate="recentProductsSubtitle"></p>
+            </div>
+
+            {% if recent_products %}
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    {% for product in recent_products %}
+                        <div class="col" data-aos="fade-up" data-aos-delay="{{ 100 * loop.index }}">
+                            <div class="card product-card h-100 pd-4">
+                                <div class="card-body">
+                                    <div class="text-center mb-3">
+                                        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="img-fluid rounded-3" style="max-height: 200px; width: auto;">
+                                    </div>
+                                    <h5 class="card-title mb-3">{{ product.name|truncate(100) }}</h5>
+
+                                    <div class="d-flex justify-content-between align-items-center mb-3 pb-4 meta-wrapper">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="badge bg-primary">{{ product.rating }} <i class="bi bi-star-fill"></i></div>
+                                            <small class="text-muted">{{ product.review_count }} <i class="bi bi-chat-text"></i></small>
+                                        </div>
+                                        <div class="progress-circle-container-sm recent-progress-circle">
+                                                <div class="circle-progress" data-value="{{ (1 - product.ml_predict_avg) * 100 }}" data-max="100" data-class="recent-circle"></div>
+                                        </div>
+                                    </div>
+                                    <a href="/result/{{ product.id }}" class="btn btn-primary-form w-100" data-translate="viewDetails"><i class="bi bi-zoom-in me-2"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5" data-aos="fade-up">
+                    <div class="alert alert-info" data-translate="noRecentProducts"></div>
+                    <a href="/" class="btn btn-primary-form mt-3" data-translate="goBackHome"><i class="bi bi-arrow-left me-2"></i></a>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+{% endblock %}
