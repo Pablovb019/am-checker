@@ -1,5 +1,6 @@
 import inspect
 import os
+from datetime import datetime, timezone
 
 from psycopg import connect
 
@@ -22,6 +23,23 @@ def db_conn():
         port= os.getenv("TFG_DB_PORT")
     )
     return conn
+
+def insert_user(user_id):
+    global conn
+    try:
+        conn = db_conn()
+        with conn.cursor() as cursor:
+            cursor.execute("INSERT INTO user_sessions (user_id, accessed_at) VALUES (%s, %s)", (user_id, datetime.now(timezone.utc)))
+            conn.commit()
+    except Exception as e:
+        conn.close()
+        error_message = e.args[0]
+        function_name = inspect.currentframe().f_code.co_name
+        exception_class = get_full_class_name(e)
+        file_name = os.path.basename(__file__)
+
+        e.args = (error_message, function_name, file_name, exception_class)
+        raise e
 
 def load_reviews(product_id):
     global conn
@@ -49,7 +67,58 @@ def load_product(product_id):
     try:
         conn = db_conn()
         with conn.cursor() as cursor:
-            cursor.execute("SELECT 1 FROM products WHERE id = %s", (product_id,))
+            cursor.execute("SELECT * FROM products WHERE id = %s", (product_id,))
+            row = cursor.fetchone()
+            columns = [desc[0] for desc in cursor.description]
+            result = dict(zip(columns, row)) if row else None
+        conn.close()
+        return result
+    except Exception as e:
+        conn.close()
+        error_message = e.args[0]
+        function_name = inspect.currentframe().f_code.co_name
+        exception_class = get_full_class_name(e)
+        file_name = os.path.basename(__file__)
+
+        e.args = (error_message, function_name, file_name, exception_class)
+        raise e
+
+
+def get_recent_products(time_threshold):
+    global conn
+    try:
+        conn = db_conn()
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT p.*, COUNT(r.id) as review_count 
+                FROM products p
+                LEFT JOIN reviews r ON p.id = r.product_id
+                WHERE p.last_scan >= %s
+                GROUP BY p.id
+                ORDER BY p.last_scan DESC
+            """, (time_threshold,))
+
+            columns = [desc[0] for desc in cursor.description]
+            data = cursor.fetchall()
+            result = [dict(zip(columns, row)) for row in data]
+        conn.close()
+        return result
+    except Exception as e:
+        conn.close()
+        error_message = e.args[0]
+        function_name = inspect.currentframe().f_code.co_name
+        exception_class = get_full_class_name(e)
+        file_name = os.path.basename(__file__)
+
+        e.args = (error_message, function_name, file_name, exception_class)
+        raise e
+
+def get_site_stats():
+    global conn
+    try:
+        conn = db_conn()
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT * FROM site_stats")
             columns = [desc[0] for desc in cursor.description]
             data = cursor.fetchall()
             result = [dict(zip(columns, row)) for row in data]
