@@ -1,0 +1,29 @@
+{% extends "basic/base.html" %}
+
+{% block title %}
+    <title data-translate="errorPageTitle"></title>
+{% endblock %}
+
+{% block content %}
+<section class="section error-section">
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-12 text-center">
+                <h1 class="display-4" data-translate="errorTitle"></h1>
+                {% if error_route == "Result" %}
+                    <p class="lead" data-translate="errorResultDescription"></p><br>
+                {% endif %}
+
+                {% if error_route == "Recents" %}
+                    <p class="lead" data-translate="errorRecentsDescription"></p><br>
+                {% endif %}
+
+                {% if error_route == "Stats" %}
+                    <p class="lead" data-translate="errorStatsDescription"></p><br>
+                {% endif %}
+                <a href="/" class="btn btn-primary-form btn-lg" data-translate="backToHome"></a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
