@@ -1,0 +1,211 @@
+{% extends "basic/base.html" %}
+
+{% block title %}
+    <title data-translate="analysisPageTitle"></title>
+{% endblock %}
+
+{% block content %}
+    <section id="productInfo" class="section section1" data-aos="fade-up">
+        <div class="container">
+            <div class="section-title">
+                <div class="col-12 text-center mb-4">
+                    <h2 data-translate="productTitle"></h2>
+                </div>
+            </div>
+
+            <div class="row gy-4 align-items-center">
+                <div class="col-lg-8 order-2 order-lg-1" data-aos="fade-up" data-aos-delay="100">
+                    <h3 class="mb-3 text-center text-lg-start">{{ product.name }}</h3>
+                    <div class="d-flex gap-3 mb-3 justify-content-center justify-content-lg-start">
+                        <div class="badge bg-primary">{{ product.rating }} <i class="bi bi-star-fill"></i></div>
+                        <div class="badge bg-secondary">{{ reviews|length }} <i class="bi bi-chat-text"></i></div>
+                    </div>
+                    {% if product.description == 'NA' %}
+                        <p class="text-muted text-center text-lg-start" data-translate="noDescription"></p>
+                    {% else %}
+                        <p class="text-muted text-center text-lg-start">{{ product.description }}</p>
+                    {% endif %}
+                    <div class="text-center text-lg-start">
+                        <a href="https://www.amazon.{{ product.country_suffix }}/dp/{{ product.id }}"
+                           class="btn btn-primary-form"
+                           target="_blank"
+                           data-translate="viewAmazon">
+                           <i class="bi bi-box-arrow-up-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 order-1 order-lg-2 text-center mb-4 mb-lg-0">
+                    <img src="{{ product.image_url }}"
+                         alt="{{ product.title }}"
+                         class="img-fluid rounded-3"
+                         style="max-height: 300px; width: auto;">
+                </div>
+            </div>
+        </div>
+    </section>
+    <section id="analysisResults" class="section section-circle" data-aos="fade-up" data-aos-delay="200">
+        <div class="container section-circle">
+            <div class="section-title">
+                <h2 data-translate="analysisTitle"></h2>
+
+                <div class="progress-circle-container mb-4">
+                    <div class="circle-progress"
+                         data-value="{{ (1 - product.ml_predict_avg) * 100 }}"
+                         data-max="100"
+                         data-class="result-circle">
+                    </div>
+                </div>
+            </div>
+
+            <div class="line-separator" data-aos="fade-up" data-aos-delay="300"></div>
+
+            <div class="row g-4">
+                <div class="col-12 col-lg-6">
+                    <div class="section-subtitle">
+                        <h3 class="mb-4 text-center" data-translate="bestReviews"></h3>
+                    </div>
+
+                    {% for review in (reviews|sort(attribute='ml_predict', reverse=True))[:2] %}
+                        <div class="card review-card mb-4" data-aos="fade-up" data-aos-delay="300">
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-8">
+                                        <div class="d-flex align-items-center gap-2 mb-2">
+                                            <div class="rating-badge bg-info">{{ review.rating }} <i class="bi bi-star-fill"></i></div>
+                                            <small class="text-muted">{{ review.date }}</small>
+                                        </div>
+                                        <h5>{{ review.title }}</h5>
+                                        <div class="review-text-container truncated">
+                                            <p class="review-text">{{ review.text }}</p>
+                                            <span class="expand-toggle" data-translate="showMoreText"></span>
+                                        </div>
+                                        <small class="text-muted" data-translate="author"></small>
+                                        <small class="text-muted">{{ review.author }}</small>
+                                    </div>
+
+                                    <div class="col-12 col-md-4 text-center mt-3 mt-md-0">
+                                        <div class="progress-circle-container">
+                                            <div class="circle-progress"
+                                                 data-value="{{ review.ml_predict * 100 }}"
+                                                 data-max="100"
+                                                 data-class="review-circle">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-12 col-lg-6">
+                    <div class="section-subtitle">
+                        <h3 class="mb-4 text-center" data-translate="worstReviews"></h3>
+                    </div>
+
+                    {% for review in (reviews|sort(attribute='ml_predict'))[:2] %}
+                        <div class="card review-card mb-4" data-aos="fade-up" data-aos-delay="300">
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-8">
+                                        <div class="d-flex align-items-center gap-2 mb-2">
+                                            <div class="rating-badge bg-info">{{ review.rating }} <i class="bi bi-star-fill"></i></div>
+                                            <small class="text-muted">{{ review.date }}</small>
+                                        </div>
+                                        <h5>{{ review.title }}</h5>
+                                        <div class="review-text-container truncated">
+                                            <p class="review-text">{{ review.text }}</p>
+                                            <span class="expand-toggle" data-translate="showMoreText"></span>
+                                        </div>
+                                        <small class="text-muted" data-translate="author"></small>
+                                        <small class="text-muted">{{ review.author }}</small>
+                                    </div>
+
+                                    <div class="col-12 col-md-4 text-center mt-3 mt-md-0">
+                                        <div class="progress-circle-container">
+                                            <div class="circle-progress"
+                                                 data-value="{{ review.ml_predict * 100 }}"
+                                                 data-max="100"
+                                                 data-class="review-circle">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="text-center mt-5">
+                <button class="btn btn-primary-form w-100 w-lg-auto"
+                        data-bs-toggle="modal"
+                        data-bs-target="#allReviewsModal"
+                        data-translate="showAllReviews">
+                    <i class="bi bi-card-list"></i> Mostrar todas las reseñas
+                </button>
+            </div>
+        </div>
+    </section>
+    <div id="reviewTemplates" style="display: none;">
+    {% for review in reviews %}
+    <div class="col-12 review-template">
+        <div class="card review-card">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-8">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <div class="rating-badge bg-info">
+                                {{ review.rating }} <i class="bi bi-star-fill"></i>
+                            </div>
+                            <small class="text-muted">{{ review.date }}</small>
+                        </div>
+                        <h5>{{ review.title }}</h5>
+                        <p class="review-text">{{ review.text }}</p>
+                        <small class="text-muted" data-translate="author"></small>
+                        <small class="text-muted">{{ review.author }}</small>
+                    </div>
+                    <div class="col-4 text-center mt-3 mt-md-0">
+                        <div class="progress-circle-container">
+                            <div class="circle-progress"
+                                data-value="{{ review.ml_predict * 100 }}"
+                                data-max="100"
+                                data-class="review-circle">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+    <div class="modal fade section-circle" id="allReviewsModal" tabindex="-1" data-bs-theme="auto" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" data-translate="allReviews"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Pagination Info -->
+                    <div class="d-flex justify-content-between align-items-center mb-4 p-2">
+                        <h6 class="mb-0" id="paginationInfo">Mostrando 1-10 de {{ reviews|length }} reseñas</h6>
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary" id="prevPage" disabled>
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary" id="nextPage">
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Reviews Container -->
+                    <div class="row row-cols-1 g-4" id="reviewsContainer"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
