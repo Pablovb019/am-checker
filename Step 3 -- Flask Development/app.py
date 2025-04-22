@@ -27,7 +27,8 @@ def get_full_class_name(obj):
 
 @app.before_request
 def track_new_user():
-	session.permanent = True  # Set session to be permanent for not inserting a new user that has already been created before
+	session.permanent = True  # Set session to be permanent for keeping it alive after browser close
+	app.permanent_session_lifetime = timedelta(days=365 * 100) # Set session lifetime to 100 years (infinite in practice)
 	if request.endpoint == 'static':
 		return  # Skip static files
 	if 'user_id' not in session:
