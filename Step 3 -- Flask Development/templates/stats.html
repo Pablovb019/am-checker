@@ -26,7 +26,7 @@
                     <p class="text-muted" data-translate="statsDateSubtitle"></p>
                     <!-- Selector de fechas -->
                     <div class="date-range-selector mb-5" data-aos="fade-up">
-                        {% for stat in site_stats %}
+                        {% for stat in site_stats|sort(attribute='snapshot_date') %}
                             <div class="date-pill{% if loop.first %} active{% endif %}" data-date="{{ stat.snapshot_date }}" data-index="{{ loop.index0 }}">{{ stat.snapshot_date.strftime('%d/%m') }}</div>
                         {% endfor %}
                     </div>

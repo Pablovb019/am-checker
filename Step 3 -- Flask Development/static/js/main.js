@@ -804,6 +804,7 @@ const App = (() => {
             try {
                 this.statsData = JSON.parse(dataContainer.dataset.stats.replace(/&quot;/g, '"'));
                 this.validatedStats = this.validateStats(this.statsData);
+                this.validatedStats.sort((a, b) => new Date(a.snapshot_date) - new Date(b.snapshot_date));
                 this.currentActivePill = document.querySelector('.date-pill.active');
                 this.hasData = true;
 
