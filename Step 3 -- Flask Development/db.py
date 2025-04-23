@@ -24,12 +24,12 @@ def db_conn():
     )
     return conn
 
-def insert_user(user_id):
+def insert_new_user(device_id):
     global conn
     try:
         conn = db_conn()
         with conn.cursor() as cursor:
-            cursor.execute("INSERT INTO user_sessions (user_id, accessed_at) VALUES (%s, %s)", (user_id, datetime.now(timezone.utc)))
+            cursor.execute("INSERT INTO user_sessions (user_id, accessed_at) VALUES (%s, %s)", (device_id, datetime.now(timezone.utc)))
             conn.commit()
     except Exception as e:
         conn.close()
@@ -40,6 +40,27 @@ def insert_user(user_id):
 
         e.args = (error_message, function_name, file_name, exception_class)
         raise e
+
+def get_tracked_ids():
+    global conn
+    try:
+        conn = db_conn()
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT user_id FROM user_sessions")
+            data = cursor.fetchall()
+            result = set(row[0] for row in data)
+        conn.close()
+        return result
+    except Exception as e:
+        conn.close()
+        error_message = e.args[0]
+        function_name = inspect.currentframe().f_code.co_name
+        exception_class = get_full_class_name(e)
+        file_name = os.path.basename(__file__)
+
+        e.args = (error_message, function_name, file_name, exception_class)
+        raise e
+
 
 def load_reviews(product_id):
     global conn

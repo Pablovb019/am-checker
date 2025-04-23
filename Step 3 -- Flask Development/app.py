@@ -1,10 +1,11 @@
 import inspect
 
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, after_this_request
 from urllib.parse import urlparse
 from waitress import serve
-
 from datetime import datetime, timedelta
+from werkzeug.middleware.proxy_fix import ProxyFix
+
 import requests
 import secrets
 import tldextract
@@ -18,6 +19,15 @@ from numba import cuda
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
+tracked_ids = set()
+
+def load_tracked_ids():
+	try:
+		tracked_ids = db.get_tracked_ids()
+		return tracked_ids
+	except Exception as e:
+		Logger.error(f"An error occurred while loading tracked IDs: {e}")
+		return set()
 
 def get_full_class_name(obj):
 	module = obj.__class__.__module__
@@ -27,24 +37,32 @@ def get_full_class_name(obj):
 
 @app.before_request
 def track_new_user():
-	session.permanent = True  # Set session to be permanent for keeping it alive after browser close
-	app.permanent_session_lifetime = timedelta(days=365 * 100) # Set session lifetime to 100 years (infinite in practice)
-	if request.endpoint == 'static':
-		return  # Skip static files
-	if 'user_id' not in session:
-		session['user_id'] = secrets.token_hex(16)
-		try:
-			db.insert_user(session['user_id'])
-			Logger.info(f"New user session created with ID: {session['user_id']}")
-		except Exception as e:
-			error_message = e.args[0]
-			function_name = inspect.currentframe().f_code.co_name
-			exception_class = get_full_class_name(e)
-			file_name = os.path.basename(__file__)
-			Logger.error(f"An error was captured inserting new user into DB. Details below.\n- File: {file_name}\n- Function: {function_name} \n- Exception: {exception_class}: {error_message}")
-			session.pop('user_id', None)
-	else:
-		Logger.info(f"User session already exists with ID: {session['user_id']}")
+	if request.endpoint == "static":
+		return
+
+	device_id = request.cookies.get("device_id")
+	if not device_id:
+		device_id = secrets.token_hex(16)
+		@after_this_request
+		def set_device_id(response):
+			response.set_cookie("device_id", device_id, max_age=60*60*24*365, httponly=True)
+			return response
+
+	if device_id in tracked_ids:
+		Logger.info(f"User already tracked. Device ID: {device_id}")
+		return
+
+	try:
+		db.insert_new_user(device_id)
+		tracked_ids.add(device_id)
+		Logger.warning(f"New user detected. Device ID: {device_id}")
+	except Exception as e:
+		error_message = e.args[0]
+		function_name = inspect.currentframe().f_code.co_name
+		exception_class = get_full_class_name(e)
+		file_name = os.path.basename(__file__)
+
+		Logger.error(f"An error was captured inserting new user. Details below.\n- File: {file_name}\n- Function: {function_name} \n- Exception: {exception_class}: {error_message}")
 @app.route("/")
 @app.route("/index")
 def index():
@@ -184,5 +202,6 @@ def apply_ml_model():
 
 if __name__ == '__main__':
 	Logger.info("Starting Flask Server. Initialising Waitress WSGI server...")
+	tracked_ids.update(load_tracked_ids()) # Load tracked IDs into memory
 	serve(app, host='0.0.0.0', port=5000, threads=8)
 	# app.run(debug=True, host='0.0.0.0', use_reloader=False)
