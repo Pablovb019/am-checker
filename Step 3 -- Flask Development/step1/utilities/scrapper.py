@@ -158,8 +158,7 @@ def get_reviews(country_name, country_suffix, rating, url):
         gl.close_driver(driver)
         del driver_pool, driver
         gc.collect()
-
-    return list(reviews.queue)
+        return list(reviews.queue)
 
 def get_reviews_star_combo(country_name, country_suffix, base_url, stars, sort, type_filter, driver_pool):
     reviews = []
@@ -183,11 +182,10 @@ def get_reviews_star_combo(country_name, country_suffix, base_url, stars, sort, 
             e.args = (error_message, function_name, file_name, exception_class)
             raise e
     finally:
+        Logger.success(f"Scraping {stars}-star reviews ({sort}|{type_filter}) -- DONE ({len(reviews)} reviews)")
         if review_driver:
             driver_pool.return_driver(review_driver)
-        Logger.success(f"Scraping {stars}-star reviews ({sort}|{type_filter}) -- DONE ({len(reviews)} reviews)")
-
-    return reviews
+        return reviews
 
 def get_reviews_stars_recursive(country_name, base_url, driver, stars, sort, type_filter):
     driver.get(base_url)
