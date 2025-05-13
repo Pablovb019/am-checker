@@ -1641,6 +1641,16 @@ body.dark-theme #analysisModal .spinner-border {
   z-index: 1;
 }
 
+#authenticityDistributionChart {
+    transition: opacity 0.3s ease;
+}
+
+.dark-theme #authenticityDistributionChart {
+    background-color: var(--surface-color);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
 .line-separator {
   width: 80%;
   height: 3px;

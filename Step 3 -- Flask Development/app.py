@@ -81,7 +81,30 @@ def results(product_id):
 			review['date'] = f"{date_split[2]}/{date_split[1]}/{date_split[0]}"
 
 		Logger.success(f"Product and reviews loaded successfully for product_id: '{product_id}'.")
-		return render_template("analysis.html", product=product, reviews=reviews)
+
+		authenticity_distribution = {
+			'0-20': int(0),
+			'20-40': int(0),
+			'40-60': int(0),
+			'60-80': int(0),
+			'80-100': int(0)
+		}
+
+		for review in reviews:
+			score = review['ml_predict'] * 100
+			if score <= 20:
+				authenticity_distribution['0-20'] += 1
+			elif score <= 40:
+				authenticity_distribution['20-40'] += 1
+			elif score <= 60:
+				authenticity_distribution['40-60'] += 1
+			elif score <= 80:
+				authenticity_distribution['60-80'] += 1
+			else:
+				authenticity_distribution['80-100'] += 1
+
+		authenticity_distribution = {k: int(v) for k, v in authenticity_distribution.items()}
+		return render_template("analysis.html", product=product, reviews=reviews, authenticity_distribution=authenticity_distribution)
 	except Exception as e:
 		error_message = e.args[0]
 		function_name = inspect.currentframe().f_code.co_name

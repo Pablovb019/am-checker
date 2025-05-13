@@ -156,8 +156,10 @@ const App = (() => {
                 const response = await fetch('/static/json/language.json');
                 this.translations = await response.json();
                 this.setupLanguage();
+                return true;
             } catch (error) {
                 console.error('Error loading translations:', error);
+                return false;
             }
         },
 
@@ -793,27 +795,32 @@ const App = (() => {
         currentActivePill: null,
         hasData: false,
 
-
         init() {
-            const dataContainer = document.getElementById('statsDataContainer');
-            if (!dataContainer) {
-                this.hasData = false;
-                return;
-            }
-
-            try {
-                this.statsData = JSON.parse(dataContainer.dataset.stats.replace(/&quot;/g, '"'));
-                this.validatedStats = this.validateStats(this.statsData);
-                this.validatedStats.sort((a, b) => new Date(a.snapshot_date) - new Date(b.snapshot_date));
-                this.currentActivePill = document.querySelector('.date-pill.active');
+            const dataAuthenticity = document.getElementById('authDistributionData');
+            if (dataAuthenticity) {
                 this.hasData = true;
+                this.initAuthenticityDistributionChart();
+            } else {
+                const dataContainer = document.getElementById('statsDataContainer');
+                if (!dataContainer) {
+                    this.hasData = false;
+                    return;
+                }
 
-                this.initTrendChart();
-                this.initDatePills();
-                this.updateCharts(this.validatedStats[0]);
-            } catch (error) {
-                console.error("Error parsing stats data:", error);
-                this.hasData = false;
+                try {
+                    this.statsData = JSON.parse(dataContainer.dataset.stats.replace(/&quot;/g, '"'));
+                    this.validatedStats = this.validateStats(this.statsData);
+                    this.validatedStats.sort((a, b) => new Date(a.snapshot_date) - new Date(b.snapshot_date));
+                    this.currentActivePill = document.querySelector('.date-pill.active');
+                    this.hasData = true;
+
+                    this.initTrendChart();
+                    this.initDatePills();
+                    this.updateCharts(this.validatedStats[0]);
+                } catch (error) {
+                    console.error("Error parsing stats data:", error);
+                    this.hasData = false;
+                }
             }
         },
 
@@ -826,20 +833,6 @@ const App = (() => {
                 percent_authentic_products: Number(stat.percent_authentic_products),
                 percent_robotized_reviews: Number(stat.percent_robotized_reviews),
             }));
-        },
-
-        refreshCharts() {
-            if (!this.hasData) return;
-
-            if (this.currentCharts.trend) {
-                this.currentCharts.trend.destroy();
-            }
-            if (this.currentCharts.category) {
-                this.currentCharts.category.destroy();
-            }
-
-            this.initTrendChart();
-            this.updateCharts(this.validatedStats[this.currentActivePill.dataset.index]);
         },
 
         initTrendChart() {
@@ -910,6 +903,96 @@ const App = (() => {
                     this.updateCharts(this.validatedStats[index]);
                 });
             });
+        },
+
+        initAuthenticityDistributionChart() {
+            const dataContainer = document.getElementById('authDistributionData');
+            if (!dataContainer) return;
+
+            if (this.currentCharts.authenticityDist) {
+                this.currentCharts.authenticityDist.destroy();
+            }
+
+            const labels = JSON.parse(dataContainer.dataset.labels);
+            const values = JSON.parse(dataContainer.dataset.values);
+
+            const lang = localStorage.getItem('language') || 'es';
+            const ctx = document.getElementById('authenticityDistributionChart');
+            const translations = TranslationSystem.translations[lang] || {};
+
+            this.currentCharts.authenticityDist = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: translations.authenticityDistributionText,
+                        data: values,
+                        backgroundColor: this.getBarColors(),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: this.getTooltipStyle()
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: this.getTickStyle()
+                        },
+                        x: {
+                            ticks: this.getTickStyle()
+                        }
+                    }
+                }
+            });
+        },
+
+        getBarColors() {
+            return [
+                'rgba(255, 99, 132, 0.7)',  // 0-20
+                'rgba(255, 159, 64, 0.7)',  // 20-40
+                'rgba(255, 205, 86, 0.7)',  // 40-60
+                'rgba(75, 192, 192, 0.7)',  // 60-80
+                'rgba(54, 162, 235, 0.7)'   // 80-100
+            ];
+        },
+
+        getTooltipStyle() {
+            const lang = localStorage.getItem('language') || 'es';
+            const translations = TranslationSystem.translations[lang] || {};
+
+            return {
+                backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--surface-color'),
+                titleColor: getComputedStyle(document.documentElement).getPropertyValue('--heading-color'),
+                bodyColor: getComputedStyle(document.documentElement).getPropertyValue('--default-color'),
+                borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-color'),
+                borderWidth: 1,
+                callbacks: {
+                    title: (tooltipItems) => {
+                        return translations.authenticityRange;
+                        },
+                    label: (context) => {
+                        const label = translations.authenticityReviewsLabel;
+                        const value = context.parsed.y || context.parsed;
+                        return `${label}: ${value}`;
+                    }
+                }
+            };
+        },
+
+        getTickStyle() {
+            const rootStyles = getComputedStyle(document.documentElement);
+            return {
+                color: rootStyles.getPropertyValue('--chart-text-color'),
+                font: {
+                    family: rootStyles.getPropertyValue('--default-font'),
+                    size: 12
+                }
+            };
         },
 
         updateCharts(selectedData) {
@@ -1021,15 +1104,36 @@ const App = (() => {
                     element.textContent = value;
                 }
             });
+        },
+
+        refreshCharts() {
+            if (!this.hasData) return;
+
+            Object.keys(this.currentCharts).forEach(key => {
+                if (this.currentCharts[key]) {
+                    this.currentCharts[key].destroy();
+                    delete this.currentCharts[key];
+                }
+            });
+
+            const authDataExists = document.getElementById('authDistributionData');
+            const trendDataExists = document.getElementById('trendChart');
+
+            if (authDataExists) {
+                this.initAuthenticityDistributionChart();
+            } else if (trendDataExists) {
+                this.initTrendChart();
+                this.updateCharts(this.validatedStats[this.currentActivePill.dataset.index]);
+            }
         }
     };
 
     /* ======== INITIALIZATION ======== */
-    const init = () => {
+    const init = async () => {
+        await TranslationSystem.init();
         ScrollManager.init();
         MobileNav.init();
         ThemeManager.init();
-        TranslationSystem.init();
         HeaderActiveClass.init();
         FAQModule.init()
         FormValidator.init();
