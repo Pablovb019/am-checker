@@ -1018,9 +1018,6 @@ const App = (() => {
                 borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-color'),
                 borderWidth: 1,
                 callbacks: {
-                    title: (tooltipItems) => {
-                        return translations.authenticityRange;
-                        },
                     label: (context) => {
                         const label = translations.authenticityReviewsLabel;
                         const value = context.parsed.y || context.parsed;

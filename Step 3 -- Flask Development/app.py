@@ -83,25 +83,25 @@ def results(product_id):
 		Logger.success(f"Product and reviews loaded successfully for product_id: '{product_id}'.")
 
 		authenticity_distribution = {
-			'0-20': int(0),
-			'20-40': int(0),
-			'40-60': int(0),
-			'60-80': int(0),
-			'80-100': int(0)
+			'0-20%': int(0),
+			'20-40%': int(0),
+			'40-60%': int(0),
+			'60-80%': int(0),
+			'80-100%': int(0)
 		}
 
 		for review in reviews:
 			score = review['ml_predict'] * 100
 			if score <= 20:
-				authenticity_distribution['0-20'] += 1
+				authenticity_distribution['0-20%'] += 1
 			elif score <= 40:
-				authenticity_distribution['20-40'] += 1
+				authenticity_distribution['20-40%'] += 1
 			elif score <= 60:
-				authenticity_distribution['40-60'] += 1
+				authenticity_distribution['40-60%'] += 1
 			elif score <= 80:
-				authenticity_distribution['60-80'] += 1
+				authenticity_distribution['60-80%'] += 1
 			else:
-				authenticity_distribution['80-100'] += 1
+				authenticity_distribution['80-100%'] += 1
 
 		authenticity_distribution = {k: int(v) for k, v in authenticity_distribution.items()}
 		return render_template("analysis.html", product=product, reviews=reviews, authenticity_distribution=authenticity_distribution)
