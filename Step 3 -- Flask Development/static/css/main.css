@@ -1804,6 +1804,71 @@ body.dark-theme {
   filter: invert(1) brightness(var(--modal-close-brightness, 1)) !important;
 }
 
+.sorting-controls {
+    display: flex;
+    gap: 0.75rem;
+    margin-left: auto;
+    padding: 0 1rem;
+}
+
+.btn-sort {
+    padding: 0.5rem 1.25rem;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid color-mix(in srgb, var(--accent-color), transparent 70%);
+    background-color: color-mix(in srgb, var(--accent-color), transparent 92%);
+    color: var(--accent-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-sort:hover {
+    background-color: color-mix(in srgb, var(--accent-color), transparent 85%);
+    border-color: var(--accent-color);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--accent-color), transparent 90%);
+}
+
+.btn-sort.active {
+    background-color: var(--accent-color);
+    color: var(--contrast-color);
+    border-color: var(--accent-color);
+    box-shadow: 0 3px 12px color-mix(in srgb, var(--accent-color), transparent 80%);
+}
+
+.btn-sort i {
+    font-size: 0.9em;
+    transition: transform 0.3s ease;
+}
+
+.btn-sort.active i {
+    transform: rotate(180deg);
+}
+
+.btn-clear-sort {
+    padding: 0.5rem 1.25rem;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid color-mix(in srgb, var(--danger-color), transparent 70%);
+    background-color: color-mix(in srgb, var(--danger-color), transparent 92%);
+    color: var(--danger-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-clear-sort:hover {
+    background-color: color-mix(in srgb, var(--danger-color), transparent 85%);
+    border-color: var(--danger-color);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--danger-color), transparent 90%);
+}
+
 .modal-dynamic-height .modal-content {
     transition: height 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), padding 0.3s ease;
 }
@@ -1813,8 +1878,24 @@ body.dark-theme {
     transition: all 0.3s ease;
 }
 
+/* Dark Mode Adjustments */
 body.dark-theme {
   --modal-close-brightness: 2; /* Hace el icono de cerrar más brillante en oscuro */
+}
+
+body.dark-theme .btn-sort {
+    border-color: color-mix(in srgb, var(--accent-color), transparent 50%);
+    background-color: color-mix(in srgb, var(--accent-color), transparent 95%);
+    color: var(--accent-color);
+}
+
+body.dark-theme .btn-sort:hover {
+    background-color: color-mix(in srgb, var(--accent-color), transparent 85%);
+}
+
+body.dark-theme .btn-sort.active {
+    background-color: var(--accent-color);
+    color: var(--surface-color);
 }
 
 /* Pagination Controls */
@@ -1930,6 +2011,45 @@ body.dark-theme {
     .circle-text-overlay {
         font-size: 16px;
     }
+}
+
+@media (max-width: 768px) {
+    .sorting-controls {
+        width: 100%;
+        justify-content: flex-end;
+        padding: 0.5rem 0;
+    }
+
+    .btn-sort {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+    }
+
+    .btn-clear-sort  {
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .sorting-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .btn-sort {
+        flex: 1 1 auto;
+        justify-content: center;
+    }
+}
+
+@keyframes sort-update {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+#reviewsContainer {
+    animation: sort-update 0.4s ease forwards;
 }
 
 /*--------------------------------------------------------------

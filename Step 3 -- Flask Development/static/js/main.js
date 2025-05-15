@@ -521,10 +521,7 @@ const App = (() => {
         },
 
         formatPercentage(value) {
-            const formatted = (value * 100).toFixed(4);
-            return formatted.endsWith('.0000')
-                ? `${Math.round(value * 100)}%`
-                : `${Number(formatted).toFixed(2).replace(/\.?0+$/, '')} %`;
+            return `${(value * 100).toFixed(2)} %`;
         },
 
         initProgressCircles() {
@@ -600,20 +597,17 @@ const App = (() => {
         mainState: {
             currentPage: 1,
             reviewsPerPage: 10,
+            currentSort: null,
             allReviews: []
         },
 
         modalState: {
             currentPage: 1,
             reviewsPerPage: 10,
-            allReviews: []
-        },
-
-        init() {
-            if (!document.getElementById('reviewsContainer')) return;
-            this.setupPaginationControls();
-            this.setupModalPagination();
-            window.addEventListener('resize', () => this.checkTextOverflow());
+            currentSort: null,
+            allReviews: [],
+            defaultReviews: [],
+            rawTemplates: []
         },
 
         setupPaginationControls() {
@@ -632,15 +626,76 @@ const App = (() => {
 
         setupModalPagination() {
             document.getElementById('allReviewsModal')?.addEventListener('show.bs.modal', () => {
-                // Get all hidden templates
                 const templates = document.querySelectorAll('#reviewTemplates .review-template');
+                if (this.modalState.rawTemplates.length === 0) {
+                    this.modalState.rawTemplates = [...templates];
+                }
 
-                // Reset and populate modal state
-                this.modalState.allReviews = Array.from(templates).map(template => template.cloneNode(true));
+                this.modalState.defaultReviews = this.modalState.rawTemplates.map(template => {
+                    const clone = template.cloneNode(true);
+                    return {
+                        element: clone,
+                        accuracy: parseFloat(clone.querySelector('.circle-progress').dataset.value)
+                    };
+                });
+
+                this.modalState.allReviews = [...this.modalState.defaultReviews];
+                this.modalState.currentSort = null;
                 this.modalState.currentPage = 1;
                 this.modalState.reviewsPerPage = 10;
+                this.updatePaginationDisplay(true);
+            });
+        },
+
+        applySorting(order){
+            this.modalState.currentSort = order;
+            this.modalState.allReviews = [...this.modalState.defaultReviews].sort((a, b) =>
+                order === 'desc' ? b.accuracy - a.accuracy : a.accuracy - b.accuracy
+            );
+            this.modalState.currentPage = 1;
+            this.updatePaginationDisplay(true);
+        },
+
+        init() {
+            if (!document.getElementById('reviewsContainer')) return;
+            this.setupPaginationControls();
+            this.setupModalPagination();
+
+            document.getElementById('clearSort')?.addEventListener('click', () => {
+                this.modalState.currentSort = null;
+                this.modalState.allReviews = [...this.modalState.defaultReviews];
+                this.modalState.currentPage = 1;
+
+                document.querySelectorAll('.btn-sort').forEach(b => {
+                    b.classList.remove('active');
+                    b.disabled = false;
+                });
 
                 this.updatePaginationDisplay(true);
+            });
+
+            window.addEventListener('resize', () => this.checkTextOverflow());
+
+            document.querySelectorAll('.btn-sort').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const clickedButton = e.currentTarget;
+                    if (clickedButton.disabled) return;
+                    const sortOrder = e.currentTarget.dataset.sort;
+                    this.applySorting(sortOrder);
+
+                    document.querySelectorAll('.btn-sort').forEach(b => {
+                        b.classList.remove('active');
+                        b.disabled = false;
+                    });
+
+                    clickedButton.classList.add('active');
+                    clickedButton.disabled = true;
+
+                    const clearSortBtn = document.getElementById('clearSort');
+                    if (clearSortBtn) {
+                        clearSortBtn.style.display = 'inline-block';
+                    }
+                });
             });
         },
 
@@ -649,21 +704,16 @@ const App = (() => {
             const lang = localStorage.getItem('language') || 'es';
             const translations = TranslationSystem.translations[lang] || {};
             const container = document.getElementById('reviewsContainer');
-
             const paginationInfo = document.getElementById('paginationInfo');
             const totalReviews = state.allReviews.length;
-
             const prevButton = document.getElementById('prevPage');
             const nextButton = document.getElementById('nextPage');
-
             container.innerHTML = '';
 
-            // Calculate visible range
             const start = (state.currentPage - 1) * state.reviewsPerPage;
             const end = start + state.reviewsPerPage;
-            const reviewsToShow = state.allReviews.slice(start, end);
+            const reviewsToShow = state.allReviews.slice(start, end).map(r => r.element);
 
-            // Add clones with animation
             reviewsToShow.forEach((reviewClone, index) => {
                 reviewClone.style.opacity = '0';
                 reviewClone.style.transform = 'translateY(20px)';
@@ -677,20 +727,16 @@ const App = (() => {
                 }, index * 50);
             });
 
-            // Actualizar controles
             prevButton.disabled = state.currentPage === 1;
             nextButton.disabled = end >= totalReviews;
-
-            // Texto de paginación
             paginationInfo.textContent = `${translations.showing || 'Mostrando'} ${start + 1}-${Math.min(end, totalReviews)} ${translations.of || 'de'} ${totalReviews} ${translations.reviews || 'reseñas'}`;
 
-            // Forzar redibujado del modal
             if (isModal) {
-                container.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
-
+                const clearSortBtn = document.getElementById('clearSort');
+                if (clearSortBtn) {
+                    clearSortBtn.style.display = state.currentSort ? 'inline-block' : 'none';
+                }
+                container.scrollTo({ top: 0, behavior: 'smooth' });
                 ProgressCircles.initProgressCircles();
             }
         },

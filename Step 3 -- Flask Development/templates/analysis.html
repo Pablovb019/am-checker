@@ -196,6 +196,11 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" data-translate="allReviews"></h5>
+                    <div class="sorting-controls">
+                        <button class="btn btn-sort" data-sort="desc" data-translate="filterBest"><i class="bi bi-sort-alpha-up"></i> disabled</button>
+                        <button class="btn btn-sort" data-sort="asc" data-translate="filterWorst"><i class="bi bi-sort-alpha-down"></i></button>
+                        <button class="btn btn-clear-sort" id="clearSort" data-translate="clearFilter"><i class="bi bi-x-circle"></i></button>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
