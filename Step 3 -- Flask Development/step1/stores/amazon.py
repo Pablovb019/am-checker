@@ -51,6 +51,30 @@ def amazon_exec(url, country_suffix):
             flag_lastScan = True
             try:
                 db.update_last_product_scan(product_id)
+                db_reviews = db.load_reviews(product_id)
+                
+                Logger.info("Getting reviews")
+                reviews = scr.get_reviews(country_name, country_suffix, product_info["rating"], url)
+                Logger.success(f"Reviews obtained. Total reviews: {len(reviews)}")
+
+                Logger.info("Checking for repeated reviews")
+                reviews = scr.remove_repeated_reviews(reviews)
+                Logger.success(f"Repeated reviews removed. Total reviews: {len(reviews)}")
+
+                Logger.info("Checking if all reviews are in English")
+                reviews = scr.check_language(reviews)
+                Logger.success(f"Foreign reviews removed. Total reviews: {len(reviews)}")
+
+                Logger.info("Ensuring that new reviews are not already in the database")
+                reviews = [review for review in reviews if
+                           review["id"] not in [db_review["id"] for db_review in db_reviews]]
+
+                reviews = scr.normalize_reviews(reviews, country_suffix)
+                db.save_reviews(product_id, reviews)
+                Logger.success("New reviews saved in database")
+
+                reviews.extend(db_reviews)
+                return product_id, reviews
             except Exception as e:
                 if len(e.args) == 4:
                     raise e
@@ -62,11 +86,6 @@ def amazon_exec(url, country_suffix):
 
                     e.args = (error_message, function_name, file_name, exception_class)
                     raise e
-
-            Logger.info("Getting reviews")
-            reviews = scr.get_reviews(country_name, country_suffix, product_info["rating"], url)
-            Logger.success(f"Reviews obtained. Total reviews: {len(reviews)}")
-            return product_id, reviews
         else:
             Logger.info("Last scan was less than a month ago. Not need for rescanning for new reviews")
             Logger.info(f"Loading reviews of product_id '{product_id}' from database")
