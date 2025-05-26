@@ -52,7 +52,7 @@ def amazon_exec(url, country_suffix):
             try:
                 db.update_last_product_scan(product_id)
                 db_reviews = db.load_reviews(product_id)
-                
+
                 Logger.info("Getting reviews")
                 reviews = scr.get_reviews(country_name, country_suffix, product_info["rating"], url)
                 Logger.success(f"Reviews obtained. Total reviews: {len(reviews)}")
@@ -68,10 +68,15 @@ def amazon_exec(url, country_suffix):
                 Logger.info("Ensuring that new reviews are not already in the database")
                 reviews = [review for review in reviews if
                            review["id"] not in [db_review["id"] for db_review in db_reviews]]
-
                 reviews = scr.normalize_reviews(reviews, country_suffix)
-                db.save_reviews(product_id, reviews)
-                Logger.success("New reviews saved in database")
+
+                if not reviews:
+                    Logger.warning("No new reviews found. Returning existing reviews from database")
+                    return product_id, db_reviews
+                else:
+                    Logger.info(f"New reviews found. Total reviews: {len(reviews)}")
+                    db.save_reviews(product_id, reviews)
+                    Logger.success("New reviews saved in database")
 
                 reviews.extend(db_reviews)
                 return product_id, reviews
