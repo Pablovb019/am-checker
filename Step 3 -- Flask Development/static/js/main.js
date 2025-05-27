@@ -1125,8 +1125,8 @@ const App = (() => {
             const cards = document.querySelectorAll('.category-card');
             const dataMapping = [
                 { key: 'best_category_authentic_products', type: 'text' },
-                { key: 'worst_category_robotized_products', type: 'text' },
                 { key: 'best_category_authentic_reviews', type: 'text' },
+                { key: 'worst_category_robotized_products', type: 'text' },
                 { key: 'worst_category_robotized_reviews', type: 'text' },
                 { key: 'day_most_analysis', type: 'date' },
                 { key: 'hour_interval_most_analysis', type: 'text' }
