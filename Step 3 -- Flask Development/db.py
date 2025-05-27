@@ -24,6 +24,25 @@ def db_conn():
     )
     return conn
 
+def check_unique_user(device_id):
+    global conn
+    try:
+        conn = db_conn()
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT EXISTS(SELECT 1 FROM user_sessions WHERE user_id = %s)", (device_id,))
+            result = cursor.fetchone()[0]
+        conn.close()
+        return result
+    except Exception as e:
+        conn.close()
+        error_message = e.args[0]
+        function_name = inspect.currentframe().f_code.co_name
+        exception_class = get_full_class_name(e)
+        file_name = os.path.basename(__file__)
+
+        e.args = (error_message, function_name, file_name, exception_class)
+        raise e
+
 def insert_new_user(device_id):
     global conn
     try:

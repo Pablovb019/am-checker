@@ -53,6 +53,11 @@ def track_new_user():
 		return
 
 	try:
+		unique = db.check_unique_user(device_id)
+		while unique:
+			device_id = secrets.token_hex(16)
+			unique = db.check_unique_user(device_id)
+
 		db.insert_new_user(device_id)
 		tracked_ids.add(device_id)
 		Logger.warning(f"New user detected. Device ID: {device_id}")
