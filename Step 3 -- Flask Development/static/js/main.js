@@ -877,7 +877,7 @@ const App = (() => {
                 total_reviews: Number(stat.total_reviews),
                 total_users: Number(stat.total_users),
                 percent_authentic_products: Number(stat.percent_authentic_products),
-                percent_robotized_reviews: Number(stat.percent_robotized_reviews),
+                percent_robotized_products: Number(stat.percent_robotized_products),
             }));
         },
 
@@ -1046,7 +1046,7 @@ const App = (() => {
             this.animateValue('activeUsers', this.safeNumber(selectedData.total_users));
             this.animateValue('avgAuthenticity', this.safeNumber(selectedData.percent_authentic_products), true);
             this.animateValue('authenticPercent', this.safeNumber(selectedData.percent_authentic_products), true);
-            this.animateValue('robotizedPercent', this.safeNumber(selectedData.percent_robotized_reviews), true);
+            this.animateValue('robotizedPercent', this.safeNumber(selectedData.percent_robotized_products), true);
 
             this.updateCategoryChart(selectedData);
             this.updateCategoryCards(selectedData);
@@ -1102,7 +1102,7 @@ const App = (() => {
                     datasets: [{
                         data: [
                             selectedData.percent_authentic_products,
-                            selectedData.percent_robotized_reviews
+                            selectedData.percent_robotized_products
                         ],
                         backgroundColor: [accentColor, secondaryColor],
                         borderColor: surfaceColor,
@@ -1126,8 +1126,8 @@ const App = (() => {
             const dataMapping = [
                 { key: 'best_category_authentic_products', type: 'text' },
                 { key: 'worst_category_robotized_products', type: 'text' },
-                { key: 'best_category_reviews_authentic', type: 'text' },
-                { key: 'worst_category_reviews_robotized', type: 'text' },
+                { key: 'best_category_authentic_reviews', type: 'text' },
+                { key: 'worst_category_robotized_reviews', type: 'text' },
                 { key: 'day_most_analysis', type: 'date' },
                 { key: 'hour_interval_most_analysis', type: 'text' }
             ];

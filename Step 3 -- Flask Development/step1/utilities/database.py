@@ -86,7 +86,7 @@ def update_last_product_scan(product_id):
     try:
         conn = db_conn()
         with conn.cursor() as cursor:
-            cursor.execute("UPDATE products SET last_scan = %s WHERE id = %s", (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), product_id))
+            cursor.execute("UPDATE products SET last_scan = %s, ml_predict_avg = %s WHERE id = %s", (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), None, product_id))
         conn.commit()
         conn.close()
     except Exception as e:
