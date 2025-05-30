@@ -43,31 +43,30 @@ def track_new_user():
 	device_id = request.cookies.get("device_id")
 	if not device_id:
 		device_id = secrets.token_hex(16)
+		try:
+			unique = db.check_unique_user(device_id)
+			while unique:
+				device_id = secrets.token_hex(16)
+				unique = db.check_unique_user(device_id)
+
+			db.insert_new_user(device_id)
+			tracked_ids.add(device_id)
+			Logger.warning(f"New user detected. Device ID: {device_id}")
+		except Exception as e:
+			error_message = e.args[0]
+			function_name = inspect.currentframe().f_code.co_name
+			exception_class = get_full_class_name(e)
+			file_name = os.path.basename(__file__)
+			Logger.error(
+				f"An error was captured inserting new user. Details below.\n- File: {file_name}\n- Function: {function_name} \n- Exception: {exception_class}: {error_message}")
 		@after_this_request
 		def set_device_id(response):
-			response.set_cookie("device_id", device_id, max_age=60*60*24*365, httponly=True)
+			response.set_cookie("device_id", device_id, max_age=60*60*24*365*100, httponly=True)
 			return response
 
 	if device_id in tracked_ids:
 		Logger.info(f"User already tracked. Device ID: {device_id}")
 		return
-
-	try:
-		unique = db.check_unique_user(device_id)
-		while unique:
-			device_id = secrets.token_hex(16)
-			unique = db.check_unique_user(device_id)
-
-		db.insert_new_user(device_id)
-		tracked_ids.add(device_id)
-		Logger.warning(f"New user detected. Device ID: {device_id}")
-	except Exception as e:
-		error_message = e.args[0]
-		function_name = inspect.currentframe().f_code.co_name
-		exception_class = get_full_class_name(e)
-		file_name = os.path.basename(__file__)
-
-		Logger.error(f"An error was captured inserting new user. Details below.\n- File: {file_name}\n- Function: {function_name} \n- Exception: {exception_class}: {error_message}")
 @app.route("/")
 @app.route("/index")
 def index():
