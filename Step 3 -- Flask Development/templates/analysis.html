@@ -224,3 +224,18 @@
         </div>
     </div>
 {% endblock %}
+
+{% block scripts %}
+        <!-- jQuery -->
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+        <!-- Circle Progress (jQuery version) -->
+        <script src="https://cdn.jsdelivr.net/npm/jquery-circle-progress@1.2.2/dist/circle-progress.min.js"></script>
+
+        <!-- Chart.js and CountUp.js for stats view -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/countup.js@1.9.3/dist/countUp.min.js"></script>
+
+        <!-- Analysis Page Scripts -->
+        <script type="module" src="/static/js/analysis.js"></script>
+{% endblock %}

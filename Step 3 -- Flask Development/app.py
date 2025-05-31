@@ -1,6 +1,7 @@
 import inspect
 
 from flask import Flask, render_template, request, jsonify, session, after_this_request
+from flask_compress import Compress
 from urllib.parse import urlparse
 from waitress import serve
 from datetime import datetime, timedelta
@@ -18,7 +19,8 @@ import os
 from numba import cuda
 
 app = Flask(__name__)
-app.secret_key = os.getenv("FLASK_SECRET_KEY")
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
+Compress(app)
 tracked_ids = set()
 
 def load_tracked_ids():
@@ -228,7 +230,7 @@ def apply_ml_model():
 		cuda.current_context().deallocations.clear()
 
 if __name__ == '__main__':
-	Logger.info("Starting Flask Server. Initialising Waitress WSGI server...")
+	Logger.info("Starting Flask Server. Using Waitress WSGI server with nginx...")
 	tracked_ids.update(load_tracked_ids()) # Load tracked IDs into memory
-	serve(app, host='0.0.0.0', port=5000, threads=8)
+	serve(app, host='127.0.0.1', port=5000, threads=8)
 	# app.run(debug=True, host='0.0.0.0', use_reloader=False)
