@@ -72,8 +72,17 @@ def track_new_user():
 @app.route("/")
 @app.route("/index")
 def index():
-	Logger.info("Loading main page...")
-	return render_template("index.html")
+	try:
+		Logger.info("Loading main page...")
+		return render_template("index.html")
+	except Exception as e:
+		error_message = e.args[0]
+		function_name = inspect.currentframe().f_code.co_name
+		exception_class = get_full_class_name(e)
+		file_name = os.path.basename(__file__)
+
+		Logger.error(f"An error was captured loading the main page. Details below.\n- File: {file_name}\n- Function: {function_name} \n- Exception: {exception_class}: {error_message}")
+		return render_template("error.html", error_route="Index"), 500
 
 @app.route("/result/<product_id>")
 def results(product_id):
