@@ -183,9 +183,3 @@ fabric.properties
 
 # idea folder, uncomment if you don't need it
 .idea
-
-# Not commit JSONs
-**/*.json
-
-#Not commit .pkl files
-**/*.pkl
