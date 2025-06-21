@@ -210,7 +210,7 @@ def get_reviews_stars_recursive(country_name, base_url, driver, stars, sort, typ
     driver.get(url)
 
     product_review = WebDriverWait(driver, 10).until(ec.presence_of_element_located((By.CSS_SELECTOR, '[data-hook="cr-filter-info-review-rating-count"]'))).text
-    total_reviews = int(re.findall(r'\d+', product_review)[1].replace(",", ""))
+    total_reviews = int(re.findall(r'^\s*(\d{1,3}(?:,\d{3})?|\d+)', product_review)[0].replace(",", ""))
     foreign = False
 
     total_reviews = min(100, total_reviews) # Limit to 100 reviews, Amazon only shows 10 reviews per page and we can only scrape 10 pages

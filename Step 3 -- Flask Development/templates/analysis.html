@@ -50,7 +50,7 @@
                 <h2 data-translate="analysisTitle"></h2>
                 <div class="progress-circle-container mb-4">
                     <div class="circle-progress"
-                         data-value="{{ (1 - product.ml_predict_avg) * 100 }}"
+                         data-value="{{ product.ml_predict_avg * 100 }}"
                          data-max="100"
                          data-class="result-circle">
                     </div>

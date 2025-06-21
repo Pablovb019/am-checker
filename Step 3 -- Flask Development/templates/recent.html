@@ -29,7 +29,7 @@
                                             <small class="text-muted">{{ product.review_count }} <i class="bi bi-chat-text"></i></small>
                                         </div>
                                         <div class="progress-circle-container-sm recent-progress-circle">
-                                                <div class="circle-progress" data-value="{{ (1 - product.ml_predict_avg) * 100 }}" data-max="100" data-class="recent-circle"></div>
+                                                <div class="circle-progress" data-value="{{ product.ml_predict_avg * 100 }}" data-max="100" data-class="recent-circle"></div>
                                         </div>
                                     </div>
                                     <a href="/result/{{ product.id }}" class="btn btn-primary-form w-100" data-translate="viewDetails"><i class="bi bi-zoom-in me-2"></i></a>

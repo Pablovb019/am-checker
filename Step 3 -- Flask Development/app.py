@@ -28,7 +28,12 @@ def load_tracked_ids():
 		tracked_ids = db.get_tracked_ids()
 		return tracked_ids
 	except Exception as e:
-		Logger.error(f"An error occurred while loading tracked IDs: {e}")
+		raised_error_message = e.args[0]
+		raised_function_name = e.args[1]
+		raised_file = e.args[2]
+		raised_exception_class = e.args[3]
+
+		Logger.error(f"An error occurred while loading tracked IDs. Details below.\n- File: {raised_file}\n- Function: {raised_function_name} \n- Exception: {raised_exception_class}: {raised_error_message}")
 		return set()
 
 def get_full_class_name(obj):

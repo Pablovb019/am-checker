@@ -144,7 +144,7 @@ const Index = (() => {
             const translations = TranslationSystem.translations[lang];
             try {
                 this.updateStepUI(1, 'start', null, translations.step1Description);
-                responseStep1 = await this.simulateApiCall('/api/fetch-reviews', { url })
+                responseStep1 = await this.simulateApiCall('/api/fetch-reviews', { payload: { url: url } });
                 this.updateStepUI(1, 'end', null, translations.step1Description_completed);
 
             } catch (error) {
@@ -161,7 +161,7 @@ const Index = (() => {
             try {
                 const { product_id, reviews } = responseStep1;
                 this.updateStepUI(2, 'start', null, translations.step2Description);
-                const responseStep2 = await this.simulateApiCall('/api/ml-model-analysis', { product_id, reviews });
+                const responseStep2 = await this.simulateApiCall('/api/ml-model-analysis', { payload: { product_id: product_id, reviews: reviews }});
                 this.updateStepUI(2, 'end', null, translations.step2Description_completed);
 
                 window.location.href = `/result/${encodeURIComponent(product_id)}`;
@@ -243,31 +243,29 @@ const Index = (() => {
         },
 
         async simulateApiCall(endpoint, payload) {
-            return new Promise((resolve, reject) => {
-                setTimeout(async () => {
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    let errorData;
                     try {
-                        const response = await fetch(endpoint, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ payload })
-                        });
-
-                        if (response.status !== 200) {
-                            throw new Error('Error in API call');
-                        } else {
-                            const result = await response.json();
-                            resolve(result);
-                        }
-
-                    } catch (error) {
-                        reject({
-                            message: 'Failed to complete operation',
-                        });
+                        errorData = await response.json();
+                    } catch (e) {
+                        throw new Error(`HTTP ${response.status}`);
                     }
-                }, 500);
-            });
+                    throw new Error(errorData.error || `HTTP ${response.status}`);
+                }
+
+                return await response.json();
+
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
         }
     };
 
