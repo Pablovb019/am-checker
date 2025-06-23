@@ -16,11 +16,11 @@ def get_full_class_name(obj):
 def db_conn():
     global conn
     conn = connect(
-        dbname= os.getenv("TFG_DB_NAME"),
-        user= os.getenv("TFG_DB_USER"),
-        password= os.getenv("TFG_DB_PASSWD"),
-        host= os.getenv("TFG_DB_HOST"),
-        port= os.getenv("TFG_DB_PORT")
+        dbname=os.getenv("TFG_DB_NAME"),
+        user=os.getenv("TFG_DB_USER"),
+        password=os.getenv("TFG_DB_PASSWD"),
+        host=os.getenv("TFG_DB_HOST"),
+        port=os.getenv("TFG_DB_PORT")
     )
     return conn
 

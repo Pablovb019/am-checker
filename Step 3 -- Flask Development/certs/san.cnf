@@ -1,20 +1,22 @@
-[req]
-default_bits = 2048
-prompt = no
-default_md = sha256
+[ req ]
+default_bits       = 2048
+prompt             = no
+default_md         = sha256
 distinguished_name = dn
-req_extensions = req_ext
-x509_extensions = v3_ext
+x509_extensions    = v3_ext
+req_extensions     = req_ext
 
-[dn]
-CN = localhost
+[ dn ]
+CN = amcheck.local
 
-[req_ext]
+[ req_ext ]
 subjectAltName = @alt_names
 
-[v3_ext]
+[ v3_ext ]
 subjectAltName = @alt_names
+keyUsage = critical, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
 
-[alt_names]
-DNS.1 = localhost
-IP.1 = 192.168.1.133
+[ alt_names ]
+IP.1 = 172.20.15.59
+DNS.1 = amcheck.local

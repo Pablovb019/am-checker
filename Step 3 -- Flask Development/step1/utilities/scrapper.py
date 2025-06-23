@@ -239,12 +239,16 @@ def get_reviews_stars_recursive(country_name, base_url, driver, stars, sort, typ
 
         if foreign:
             break # If a foreign review is found, stop scraping, continue with the next filter
-        # next page
         try:
-            next_url = driver.current_url
-            page_number = int(next_url.split("pageNumber=")[1].split("&")[0])
-            next_url = next_url.replace(f"pageNumber={page_number}", f"pageNumber={page_number + 1}")
-            driver.get(next_url)
+            next_button = driver.find_element(By.CLASS_NAME, 'a-last')
+        except NoSuchElementException:
+            next_button = None
+        try:
+            if next_button is not None and "a-disabled" not in next_button.get_attribute("class"):
+                next_button.click()
+                WebDriverWait(driver, 10).until(ec.staleness_of(reviews_page[0]))
+            else:
+                break  # No more pages to scrape
         except Exception as e:
             if len(e.args) == 4:
                 raise e
