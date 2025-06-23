@@ -1,8 +1,5 @@
 import {TranslationSystem} from '/static/js/main.js';
 
-const Analysis = (() => {
-    "use strict";
-
     /* ======= CONFIGURATION ======== */
     const config = {
         selectors: {
@@ -107,7 +104,7 @@ const Analysis = (() => {
     };
 
     /* ======== CHART SYSTEM ======== */
-    const ChartSystem = {
+    export const ChartAvgSystem = {
         statsData: null,
         currentCharts: {},
         currentActivePill: null,
@@ -685,18 +682,11 @@ const Analysis = (() => {
         }
     };
 
-    /* ======== INITIALIZATION ======== */
-    const init = async () => {
-        ProgressCircles.init();
-        ChartSystem.init();
-        PaginationSystem.init();
-        ExpandToggleHandler.init();
-        ModalManager.init();
-    };
-
-    return { init };
-
-})();
-
 // Start application
-document.addEventListener('DOMContentLoaded', Analysis.init);
+document.addEventListener('DOMContentLoaded', () => {
+    ProgressCircles.init();
+    PaginationSystem.init();
+    ExpandToggleHandler.init();
+    ModalManager.init();
+    ChartAvgSystem.init();
+});

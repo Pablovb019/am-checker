@@ -140,10 +140,20 @@ const App = (() => {
                 element.classList.toggle('light-background', !isDark);
             });
 
-            if (window.location.pathname.startsWith('/result/') || window.location.pathname === '/stats') {
+            if (window.location.pathname === '/stats') {
                 import('/static/js/stats.js')
                     .then(module => {
                         module.ChartSystem.refreshCharts();
+                    })
+                    .catch(error => {
+                        console.error('Error cargando módulo:', error);
+                    });
+            }
+
+            if (window.location.pathname.startsWith('/result/')) {
+                import('/static/js/analysis.js')
+                    .then(module => {
+                        module.ChartAvgSystem.refreshCharts();
                     })
                     .catch(error => {
                         console.error('Error cargando módulo:', error);
@@ -200,10 +210,20 @@ const App = (() => {
             this.updateToggleTexts(lang);
 
             // Update charts
-            if (window.location.pathname.startsWith('/result/') || window.location.pathname === '/stats') {
+            if (window.location.pathname === '/stats') {
                 import('/static/js/stats.js')
                     .then(module => {
                         module.ChartSystem.refreshCharts();
+                    })
+                    .catch(error => {
+                        console.error('Error cargando módulo:', error);
+                    });
+            }
+
+            if (window.location.pathname.startsWith('/result/')) {
+                import('/static/js/analysis.js')
+                    .then(module => {
+                        module.ChartAvgSystem.refreshCharts();
                     })
                     .catch(error => {
                         console.error('Error cargando módulo:', error);
